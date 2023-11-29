@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.sp
 import dev.awd.injaaz.R
 
 private val inter = FontFamily(Font(R.font.inter_regular))
+ val pilat_extended = FontFamily(Font(R.font.pilat_extended_regular))
 
 
 // Set of Material typography styles to start with
@@ -27,12 +28,11 @@ val Typography = Typography(
         lineHeight = 28.sp,
         letterSpacing = 0.sp
     ),
-    /*labelSmall = TextStyle(
+    labelSmall = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Medium,
         fontSize = 11.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp
     )
-    */
 )
