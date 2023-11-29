@@ -2,6 +2,7 @@ package dev.awd.injaaz.presentation.notes
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,8 +32,27 @@ import dev.awd.injaaz.ui.theme.InjaazTheme
 @Composable
 fun NotesScreen(
     modifier: Modifier = Modifier,
-    notes: List<Note>
+    onNoteClick: (Int) -> Unit
 ) {
+    val notes = listOf(
+        Note(
+            title = "NoteOne ",
+            content = "This is the note content",
+            timeStamp = "",
+        ),
+        Note(
+            title = "NoteOne ",
+            content = "This is the note content",
+            timeStamp = "",
+        ),
+        Note(
+            title = "NoteOne ",
+            content = "This is the note content",
+            timeStamp = "",
+        ),
+
+        )
+
     if (notes.isEmpty()) NoNotessView(modifier = modifier)
     else {
         Column(
@@ -49,7 +69,7 @@ fun NotesScreen(
                 modifier = Modifier
                     .padding(8.dp)
             )
-            NotesView(notes = notes)
+            NotesView(notes = notes, onNoteClick = onNoteClick)
         }
     }
 }
@@ -81,11 +101,15 @@ fun NoNotessView(
 @Composable
 fun NotesView(
     modifier: Modifier = Modifier,
-    notes: List<Note>
+    notes: List<Note>,
+    onNoteClick: (Int) -> Unit
 ) {
     LazyVerticalGrid(modifier = modifier, columns = GridCells.Adaptive(150.dp)) {
         items(notes) {
-            NoteItem(title = it.title, content = it.content)
+            NoteItem(
+                title = it.title,
+                content = it.content,
+                onClick = { onNoteClick(it.hashCode()) })
         }
     }
 }
@@ -95,11 +119,13 @@ fun NoteItem(
     modifier: Modifier = Modifier,
     title: String,
     content: String,
+    onClick: () -> Unit,
 ) {
     Column(
         modifier = modifier
             .padding(8.dp)
             .background(MaterialTheme.colorScheme.primary, RectangleShape)
+            .clickable { onClick() }
     ) {
         Text(
             text = title,
@@ -122,24 +148,7 @@ private fun NotesPreview() {
     InjaazTheme {
         NotesScreen(
             modifier = Modifier.padding(16.dp),
-            notes = listOf(
-                Note(
-                    title = "NoteOne ",
-                    content = "This is the note content",
-                    timeStamp = "",
-                ),
-                Note(
-                    title = "NoteOne ",
-                    content = "This is the note content",
-                    timeStamp = "",
-                ),
-                Note(
-                    title = "NoteOne ",
-                    content = "This is the note content",
-                    timeStamp = "",
-                ),
-
-                )
+            onNoteClick = {}
         )
     }
 }

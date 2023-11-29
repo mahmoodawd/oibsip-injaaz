@@ -3,6 +3,7 @@ package dev.awd.injaaz.presentation.tasks
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,6 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.awd.injaaz.R
+import dev.awd.injaaz.domain.models.Priority
 import dev.awd.injaaz.domain.models.Task
 import dev.awd.injaaz.presentation.components.InjaazSearchBar
 import dev.awd.injaaz.ui.theme.InjaazTheme
@@ -39,8 +41,31 @@ import dev.awd.injaaz.ui.theme.InjaazTheme
 @Composable
 fun TasksScreen(
     modifier: Modifier = Modifier,
-    tasks: List<Task>
+    onTaskClick: (Int) -> Unit
 ) {
+    val tasks = listOf(
+        Task(
+            title = "Task1",
+            description = "This is Task one description",
+            date = "25 Jan",
+            isCompleted = true,
+            priority = Priority.HIGH
+        ),
+        Task(
+            title = "Task2",
+            description = "This is Task Two description",
+            date = "25 Jan",
+            isCompleted = true,
+            priority = Priority.MODERATE
+        ),
+        Task(
+            title = "Task Test",
+            description = "This is Task one description",
+            date = "25 Jan",
+            isCompleted = false,
+            priority = Priority.HIGH
+        )
+    )
     if (tasks.isEmpty()) NoTasksView(modifier = modifier)
     else {
         Column(
@@ -51,7 +76,7 @@ fun TasksScreen(
         ) {
 
             InjaazSearchBar(onValueChanged = {}, onFilter = {})
-            TaskView(tasks = tasks)
+            TaskView(tasks = tasks, onTaskClick = onTaskClick, onTaskChecked = {})
         }
     }
 
@@ -85,7 +110,9 @@ fun NoTasksView(
 @Composable
 fun TaskView(
     modifier: Modifier = Modifier,
-    tasks: List<Task>
+    tasks: List<Task>,
+    onTaskClick: (Int) -> Unit,
+    onTaskChecked: (Boolean) -> Unit,
 ) {
     LazyColumn(modifier = modifier) {
         stickyHeader {
@@ -97,7 +124,12 @@ fun TaskView(
             )
         }
         items(tasks) {
-            TaskItem(title = it.title, isCompleted = it.isCompleted)
+            TaskItem(
+                title = it.title,
+                isCompleted = it.isCompleted,
+                onTaskClick = { onTaskClick(it.hashCode()) },
+                onTaskChecked = onTaskChecked
+            )
         }
     }
 }
@@ -106,7 +138,9 @@ fun TaskView(
 fun TaskItem(
     modifier: Modifier = Modifier,
     title: String,
-    isCompleted: Boolean
+    isCompleted: Boolean,
+    onTaskClick: () -> Unit,
+    onTaskChecked: (Boolean) -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -115,10 +149,12 @@ fun TaskItem(
             .background(MaterialTheme.colorScheme.onBackground)
             .fillMaxWidth()
     ) {
-        Text(text = title, color = Color.White)
-        Spacer(modifier = Modifier.weight(1f))
+        Text(text = title, color = Color.White, modifier = Modifier.clickable { onTaskClick() })
+        Spacer(modifier = Modifier
+            .weight(1f)
+            .clickable { onTaskClick() })
         IconButton(
-            onClick = { /*TODO*/ },
+            onClick = { onTaskChecked(false) },
             colors = IconButtonDefaults.iconButtonColors(
                 contentColor = Color.Black,
                 containerColor = MaterialTheme.colorScheme.primary
@@ -226,44 +262,7 @@ private fun TasksPreview() {
     InjaazTheme {
         TasksScreen(
             modifier = Modifier.padding(8.dp),
-            tasks = emptyList()
-            /*listOf(
-                Task(
-                    title = "Task1",
-                    description = "This is Task one description",
-                    date = "25 Jan",
-                    isCompleted = true,
-                    priority = Priority.HIGH
-                ),
-                Task(
-                    title = "Task2",
-                    description = "This is Task Two description",
-                    date = "25 Jan",
-                    isCompleted = true,
-                    priority = Priority.MODERATE
-                ),
-                Task(
-                    title = "Task Test",
-                    description = "This is Task one description",
-                    date = "25 Jan",
-                    isCompleted = false,
-                    priority = Priority.HIGH
-                ),
-                Task(
-                    title = "Task5",
-                    description = "This is Task one description",
-                    date = "25 Jan",
-                    isCompleted = true,
-                    priority = Priority.LOW
-                ),
-                Task(
-                    title = "Task1",
-                    description = "This is Task one description",
-                    date = "25 Jan",
-                    isCompleted = false,
-                    priority = Priority.MODERATE
-                )
-            )*/
+            onTaskClick = {},
         )
     }
 

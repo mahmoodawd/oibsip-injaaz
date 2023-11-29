@@ -16,7 +16,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import dev.awd.injaaz.presentation.HomeScreen
 import dev.awd.injaaz.presentation.WelcomeScreen
+import dev.awd.injaaz.presentation.notes.NewNoteScreen
+import dev.awd.injaaz.presentation.settings.SettingsScreen
+import dev.awd.injaaz.presentation.tasks.NewTaskScreen
+import dev.awd.injaaz.presentation.tasks.TaskDetailsScreen
 import dev.awd.injaaz.ui.theme.InjaazTheme
 
 class MainActivity : ComponentActivity() {
@@ -50,8 +55,35 @@ fun InjaazNavHost(
         composable(route = WelcomeDest.route) {
             WelcomeScreen(modifier = modifier, onEmailButtonClick = {
                 Toast.makeText(context, "SOON", Toast.LENGTH_SHORT).show()
-            }, onGoogleButtonClick = {})
+            }, onGoogleButtonClick = {
+                navController.navigate(HomeDest.route)
+            })
         }
+        composable(route = HomeDest.route) {
+            HomeScreen(onAddButtonClick = { screenIndex ->
+                when (screenIndex) {
+                    0 -> navController.navigate(NewTaskDest.route)
+                    1 -> navController.navigate(NewNoteDest.route)
+                }
+
+            }, onUserAvatarClick = { navController.navigate(SettingsDest.route) },
+                onTaskItemClick = { navController.navigate(TaskDetailsDest.route) },
+                onNoteItemClick = { navController.navigate(NewNoteDest.route) })
+        }
+        composable(route = NewTaskDest.route) {
+            NewTaskScreen(onBackPressed = { navController.popBackStack() })
+        }
+        composable(route = TaskDetailsDest.route) {
+            TaskDetailsScreen(onBackPressed = { navController.popBackStack() })
+        }
+
+        composable(route = NewNoteDest.route) {
+            NewNoteScreen(onBackPressed = { navController.popBackStack() })
+        }
+        composable(route = SettingsDest.route) {
+            SettingsScreen(onBackPressed = { navController.popBackStack() })
+        }
+
     }
 }
 

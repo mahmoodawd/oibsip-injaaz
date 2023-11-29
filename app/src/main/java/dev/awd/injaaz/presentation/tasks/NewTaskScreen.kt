@@ -53,7 +53,7 @@ import java.util.Calendar
 @Composable
 fun NewTaskScreen(
     modifier: Modifier = Modifier,
-    onAddTask: (Task) -> Unit,
+    onAddTask: (Task) -> Unit = {},
     onBackPressed: () -> Unit
 ) {
     var taskTitle = ""

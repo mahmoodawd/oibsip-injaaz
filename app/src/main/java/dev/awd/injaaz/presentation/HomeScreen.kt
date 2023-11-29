@@ -41,14 +41,15 @@ import dev.awd.injaaz.presentation.tasks.TasksScreen
 import dev.awd.injaaz.ui.theme.InjaazTheme
 import dev.awd.injaaz.ui.theme.pilat_extended
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    userName: String,
-    @DrawableRes userAvatar: Int,
+    userName: String = "username",
+    @DrawableRes userAvatar: Int = R.drawable.user,
     onAddButtonClick: (Int) -> Unit,
     onUserAvatarClick: () -> Unit,
+    onTaskItemClick: (Int) -> Unit,
+    onNoteItemClick: (Int) -> Unit,
 
     ) {
 
@@ -102,8 +103,15 @@ fun HomeScreen(
 
     ) { paddingValues ->
         when (selectedItemIndex) {
-            0 -> TasksScreen(modifier = modifier.padding(paddingValues), emptyList())
-            1 -> NotesScreen(modifier = modifier.padding(paddingValues), emptyList())
+            0 -> TasksScreen(
+                modifier = modifier.padding(paddingValues),
+                onTaskClick = onTaskItemClick,
+            )
+
+            1 -> NotesScreen(
+                modifier = modifier.padding(paddingValues),
+                onNoteClick = onNoteItemClick
+            )
         }
     }
 }
@@ -164,7 +172,9 @@ private fun HomePreview() {
             userName = "Mahmoud Awad",
             userAvatar = R.drawable.user,
             onUserAvatarClick = {},
-            onAddButtonClick = {})
+            onAddButtonClick = {},
+            onTaskItemClick = {},
+            onNoteItemClick = {})
     }
 }
 

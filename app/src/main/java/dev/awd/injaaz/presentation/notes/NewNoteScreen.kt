@@ -30,7 +30,7 @@ import java.util.Calendar
 @Composable
 fun NewNoteScreen(
     modifier: Modifier = Modifier,
-    onAddNote: (Note) -> Unit,
+    onAddNote: (Note) -> Unit = {},
     onBackPressed: () -> Unit
 ) {
     var noteTitle = ""

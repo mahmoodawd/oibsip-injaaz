@@ -30,7 +30,13 @@ import dev.awd.injaaz.ui.theme.pilat_extended
 fun TaskDetailsScreen(
     modifier: Modifier = Modifier,
     onBackPressed: () -> Unit,
-    task: Task
+    task: Task = Task(
+        title = "Task1",
+        description = "This is Task one description",
+        date = "25 Jan",
+        isCompleted = true,
+        priority = Priority.HIGH
+    )
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
