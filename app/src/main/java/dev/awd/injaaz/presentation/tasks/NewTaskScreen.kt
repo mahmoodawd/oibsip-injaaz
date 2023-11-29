@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,9 +14,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -25,6 +27,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -37,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,6 +50,7 @@ import dev.awd.injaaz.domain.models.Priority
 import dev.awd.injaaz.domain.models.Task
 import dev.awd.injaaz.presentation.components.ScreenHeader
 import dev.awd.injaaz.ui.theme.InjaazTheme
+import dev.awd.injaaz.utils.capitalize
 import dev.awd.injaaz.utils.extractDateFormatted
 import dev.awd.injaaz.utils.extractHourFormatted
 import java.util.Calendar
@@ -95,7 +100,7 @@ fun NewTaskScreen(
             shape = RoundedCornerShape(size = 6.dp)
         ) {
             Text(
-                text = "Create".uppercase(),
+                text = "Create",
                 color = Color.Black,
                 fontWeight = FontWeight.Bold,
                 modifier = modifier.padding(8.dp)
@@ -170,7 +175,7 @@ fun PrioritySection(
         ) {
             priorityList.forEachIndexed { index, priority ->
                 Text(
-                    text = priority.name,
+                    text = priority.name.lowercase().capitalize(),
                     color = MaterialTheme.colorScheme.secondary
                 )
                 RadioButton(selected = selectedPriorityIndex == index, onClick = {
@@ -216,25 +221,49 @@ fun TimeDateSection(
             onPicked = {
                 onTimeChanged(timePickerState.hour.toString())
             }) {
-            TimePicker(state = timePickerState)
+            TimePicker(
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(12.dp),
+                state = timePickerState,
+                colors = TimePickerDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    periodSelectorSelectedContainerColor = MaterialTheme.colorScheme.primary,
+                    periodSelectorUnselectedContentColor = MaterialTheme.colorScheme.onBackground,
+                    periodSelectorUnselectedContainerColor = MaterialTheme.colorScheme.onSurface,
+                    clockDialColor = MaterialTheme.colorScheme.onBackground,
+                    timeSelectorSelectedContainerColor = MaterialTheme.colorScheme.primary,
+                    timeSelectorUnselectedContainerColor = MaterialTheme.colorScheme.onBackground,
+                    timeSelectorSelectedContentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+            )
         }
         PickerItem(
             text = extractDateFormatted(datePickerState.selectedDateMillis!!),
             icon = R.drawable.calendar,
             onPicked = { onDateChanged(datePickerState.selectedDateMillis.toString()) }
         ) {
-            DatePicker(state = datePickerState, showModeToggle = false)
+            DatePicker(
+                headline = null,
+                title = null,
+                state = datePickerState, showModeToggle = false, colors = DatePickerDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.onBackground,
+                    yearContentColor = MaterialTheme.colorScheme.onSurface,
+                    //YearPicker button takes the onSurfaceVariant color(Not included here)
+                )
+            )
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PickerItem(
     modifier: Modifier = Modifier,
     text: String,
     @DrawableRes icon: Int,
     onPicked: () -> Unit,
-    content: @Composable () -> Unit,
+    content: @Composable() (ColumnScope.() -> Unit)
 ) {
     var showPickerDialog by remember {
         mutableStateOf(false)
@@ -264,8 +293,12 @@ fun PickerItem(
     }
 
     if (showPickerDialog) {
-        AlertDialog(
-            title = { Text(text = text) },
+        DatePickerDialog(
+            shape = RectangleShape,
+            tonalElevation = 12.dp,
+            colors = DatePickerDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.background,
+            ),
             onDismissRequest = { showPickerDialog = false },
             confirmButton = {
                 TextButton(onClick = {
@@ -282,7 +315,7 @@ fun PickerItem(
                     Text(text = "Cancel")
                 }
             },
-            text = content
+            content = content
         )
     }
 }

@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import dev.awd.injaaz.R
 import dev.awd.injaaz.presentation.components.AppLogo
 import dev.awd.injaaz.ui.theme.InjaazTheme
+import dev.awd.injaaz.ui.theme.pilat_extended
 
 @Composable
 fun WelcomeScreen(
@@ -58,17 +59,20 @@ fun WelcomeScreen(
         Text(
             text = buildAnnotatedString {
                 withStyle(style = SpanStyle(color = Color.White)) {
-                    append("Manage\nYour Tasks\nWith ")
+                    append("Manage Your Tasks With ")
                 }
                 withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
                     append(stringResource(id = R.string.app_name))
                 }
             },
-            letterSpacing = 4.sp,
-            fontSize = 58.sp,
-            lineHeight = 62.sp,
+            letterSpacing = 2.sp,
+            fontSize = 48.sp,
+            lineHeight = 58.sp,
+            fontFamily = pilat_extended,
             fontWeight = FontWeight(600),
-            modifier = Modifier.align(Alignment.Start)
+            modifier = Modifier
+                .align(Alignment.Start)
+                .padding(vertical = 4.dp)
         )
         Button(
             onClick = onEmailButtonClick,
@@ -81,7 +85,8 @@ fun WelcomeScreen(
             onClick = onGoogleButtonClick,
             border = BorderStroke(2.dp, Color.White),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Transparent
+                containerColor = Color.Transparent,
+                contentColor = MaterialTheme.colorScheme.secondary
             ),
             shape = RoundedCornerShape(size = 6.dp),
             modifier = Modifier.fillMaxWidth(),
@@ -90,6 +95,7 @@ fun WelcomeScreen(
                 Icon(
                     painter = painterResource(id = R.drawable.google),
                     contentDescription = "Google",
+
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 Text(text = "Google")

@@ -33,8 +33,12 @@ fun NewNoteScreen(
     onAddNote: (Note) -> Unit = {},
     onBackPressed: () -> Unit
 ) {
-    var noteTitle = ""
-    var noteContent = ""
+    var noteTitle by rememberSaveable {
+        mutableStateOf("")
+    }
+    var noteContent by rememberSaveable {
+        mutableStateOf("")
+    }
     val timeStamp = Calendar.getInstance().timeInMillis.toString()
 
     Column(

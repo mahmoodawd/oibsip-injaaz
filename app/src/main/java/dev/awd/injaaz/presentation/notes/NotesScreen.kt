@@ -60,7 +60,7 @@ fun NotesScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            InjaazSearchBar(onValueChanged = {}, onFilter = {})
+            InjaazSearchBar(hint = "Search Notes", onValueChanged = {}, onFilter = {})
             Text(
                 text = "All Notes",
                 color = Color.White,

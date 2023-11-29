@@ -25,6 +25,7 @@ import dev.awd.injaaz.domain.models.Task
 import dev.awd.injaaz.presentation.components.ScreenHeader
 import dev.awd.injaaz.ui.theme.InjaazTheme
 import dev.awd.injaaz.ui.theme.pilat_extended
+import dev.awd.injaaz.utils.capitalize
 
 @Composable
 fun TaskDetailsScreen(
@@ -50,12 +51,12 @@ fun TaskDetailsScreen(
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.minimumInteractiveComponentSize()
             )
-            Icon(
+           /* Icon(
                 painter = painterResource(id = R.drawable.delete),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier = modifier.minimumInteractiveComponentSize()
-            )
+            )*/
         })
         Text(
             text = task.title,
@@ -73,7 +74,7 @@ fun TaskDetailsScreen(
             PropertyView(
                 icon = R.drawable.priority,
                 title = "Priority",
-                subtitle = task.priority.name
+                subtitle = task.priority.name.lowercase().capitalize()
             )
         }
         Text(

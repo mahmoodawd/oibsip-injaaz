@@ -22,6 +22,7 @@ private val LightColorScheme = lightColorScheme(
     background = darkBlue,
     onSurface = lightGrey,
     onBackground = darkGrey,
+    onSurfaceVariant = lightGrey,
     onPrimary = Color.Black, // For Text Colors on Yellow Items
     secondary = Color.White //For Text Colors on Grey items
 

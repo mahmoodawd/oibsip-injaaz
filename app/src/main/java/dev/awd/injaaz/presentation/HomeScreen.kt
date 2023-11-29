@@ -3,15 +3,18 @@ package dev.awd.injaaz.presentation
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -68,7 +71,21 @@ fun HomeScreen(
         floatingActionButtonPosition = FabPosition.Center,
         floatingActionButton = {
             FloatingActionButton(
+                modifier = Modifier
+                    .offset(y = 48.dp)
+//                    .background(MaterialTheme.colorScheme.primary)
+                    .border(
+                        width = 8.dp,
+                        color = MaterialTheme.colorScheme.background,
+                        shape = CircleShape
+                    )
+                    .clip(CircleShape)
+                    .shadow(shape = CircleShape, elevation = 8.dp, clip = true)
+                    .padding(4.dp),
                 shape = CircleShape,
+                elevation = FloatingActionButtonDefaults.elevation(
+                    defaultElevation = 16.dp
+                ),
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = Color.Black,
                 onClick = { onAddButtonClick(selectedItemIndex) }) {
@@ -86,6 +103,8 @@ fun HomeScreen(
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
                             selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface,
                             indicatorColor = Color(0xFF263238)
                         ),
                         label = { Text(text = item.first) },

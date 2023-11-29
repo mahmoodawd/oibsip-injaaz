@@ -26,6 +26,7 @@ import dev.awd.injaaz.R
 @Composable
 fun InjaazSearchBar(
     modifier: Modifier = Modifier,
+    hint: String,
     onValueChanged: (String) -> Unit,
     onFilter: () -> Unit
 ) {
@@ -35,7 +36,7 @@ fun InjaazSearchBar(
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
         TextField(
             value = text,
-            placeholder = { Text(text = "Search tasks") },
+            placeholder = { Text(text = hint) },
             leadingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.search),

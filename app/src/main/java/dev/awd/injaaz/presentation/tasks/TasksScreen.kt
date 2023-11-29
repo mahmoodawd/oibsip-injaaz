@@ -75,7 +75,7 @@ fun TasksScreen(
                 .padding(16.dp)
         ) {
 
-            InjaazSearchBar(onValueChanged = {}, onFilter = {})
+            InjaazSearchBar(hint = "Search tasks", onValueChanged = {}, onFilter = {})
             TaskView(tasks = tasks, onTaskClick = onTaskClick, onTaskChecked = {})
         }
     }
@@ -149,7 +149,13 @@ fun TaskItem(
             .background(MaterialTheme.colorScheme.onBackground)
             .fillMaxWidth()
     ) {
-        Text(text = title, color = Color.White, modifier = Modifier.clickable { onTaskClick() })
+        Text(
+            text = title,
+            color = Color.White,
+            modifier = Modifier
+                .clickable { onTaskClick() }
+                .padding(horizontal = 8.dp)
+        )
         Spacer(modifier = Modifier
             .weight(1f)
             .clickable { onTaskClick() })
