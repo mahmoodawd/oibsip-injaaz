@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -22,21 +23,42 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
+import coil.compose.SubcomposeAsyncImage
 import dev.awd.injaaz.R
+import dev.awd.injaaz.presentation.auth.AuthUiClient
+import dev.awd.injaaz.presentation.auth.GoogleAuthUiClient
 import dev.awd.injaaz.presentation.components.ScreenHeader
 import dev.awd.injaaz.ui.theme.InjaazTheme
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,
+    googleAuthUiClient: AuthUiClient,
+    onLogoutSuccess: () -> Unit,
     onBackPressed: () -> Unit
 ) {
+
+    val user = googleAuthUiClient.getSignedInUser()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleScope = lifecycleOwner.lifecycleScope
+
+    fun logOut() {
+        lifecycleScope.launch {
+            googleAuthUiClient.signOut()
+            onLogoutSuccess()
+        }
+    }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -44,8 +66,21 @@ fun SettingsScreen(
     ) {
 
         ScreenHeader(screenTitle = "Settings", onBackPressed = onBackPressed)
-        Image(
-            painter = painterResource(id = R.drawable.usertag), contentDescription = null,
+        SubcomposeAsyncImage(
+            model = user?.profilePhotoUrl,
+            contentDescription = user?.userName,
+            loading = {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.scale(0.5f)
+                )
+            },
+            error = {
+                Image(
+                    painter = painterResource(id = R.drawable.user),
+                    contentDescription = null
+                )
+            },
             modifier = Modifier
                 .padding(12.dp)
                 .size(127.dp)
@@ -60,12 +95,12 @@ fun SettingsScreen(
                 .padding(4.dp)
         )
         SettingTile(
-            title = "username",
+            title = user?.userName ?: "Username",
             leadingIcon = R.drawable.useradd,
             trailingIcon = R.drawable.edit
         ) {}
         SettingTile(
-            title = "email",
+            title = user?.email ?: "Email",
             leadingIcon = R.drawable.usertag,
             trailingIcon = R.drawable.edit
         ) {}
@@ -81,7 +116,7 @@ fun SettingsScreen(
         ) {}
         Spacer(modifier = Modifier.weight(1f))
         Button(
-            onClick = { },
+            onClick = { logOut() },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(size = 6.dp)
         ) {
@@ -138,6 +173,8 @@ fun SettingTile(
 @Composable
 private fun SettingsPreview() {
     InjaazTheme {
-        SettingsScreen {}
+        SettingsScreen(
+            googleAuthUiClient = GoogleAuthUiClient(LocalContext.current),
+            onLogoutSuccess = {}) {}
     }
 }

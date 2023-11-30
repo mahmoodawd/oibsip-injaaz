@@ -1,5 +1,9 @@
-package dev.awd.injaaz.presentation
+package dev.awd.injaaz.presentation.auth
 
+import android.app.Activity.RESULT_OK
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -17,10 +21,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -30,17 +39,59 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.awd.injaaz.R
 import dev.awd.injaaz.presentation.components.AppLogo
 import dev.awd.injaaz.ui.theme.InjaazTheme
 import dev.awd.injaaz.ui.theme.pilat_extended
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @Composable
 fun WelcomeScreen(
     modifier: Modifier = Modifier,
+    googleAuthUiClient: AuthUiClient,
     onEmailButtonClick: () -> Unit,
-    onGoogleButtonClick: () -> Unit,
+    onSignInSuccess: () -> Unit,
 ) {
+    val viewModel = viewModel<AuthViewModel>()
+    val authUiState by viewModel.uiState.collectAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleScope = lifecycleOwner.lifecycleScope
+
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult(),
+        onResult = { result ->
+            if (result.resultCode == RESULT_OK) {
+                lifecycleScope.launch {
+                    val signInResult = googleAuthUiClient.getSignInResultFromIntent(
+                        intent = result.data ?: return@launch
+                    )
+                    viewModel.onSignInResult(signInResult)
+                }
+            }
+        }
+    )
+    LaunchedEffect(key1 = authUiState.isSuccessful) {
+        if (authUiState.isSuccessful) {
+            Timber.i("SignIn Successful")
+            onSignInSuccess()
+            viewModel.resetState()
+        }
+    }
+
+    fun signInWithGoogle() {
+        lifecycleScope.launch {
+            val intentSender = googleAuthUiClient.signIn()
+            launcher.launch(
+                IntentSenderRequest.Builder(
+                    intentSender ?: return@launch
+                ).build()
+            )
+        }
+    }
     Column(
         modifier = modifier
             .verticalScroll(rememberScrollState())
@@ -82,7 +133,7 @@ fun WelcomeScreen(
             Text(text = "Continue With Email", color = Color.Black, fontWeight = FontWeight.Bold)
         }
         Button(
-            onClick = onGoogleButtonClick,
+            onClick = { signInWithGoogle() },
             border = BorderStroke(2.dp, Color.White),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent,
@@ -109,6 +160,11 @@ fun WelcomeScreen(
 @Composable
 private fun WelcomePreview() {
     InjaazTheme {
-        WelcomeScreen(onEmailButtonClick = {}, onGoogleButtonClick = {})
+        val context = LocalContext.current
+        WelcomeScreen(
+            onEmailButtonClick = {},
+            onSignInSuccess = {},
+            googleAuthUiClient = GoogleAuthUiClient(context)
+        )
     }
 }

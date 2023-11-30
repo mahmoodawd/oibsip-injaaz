@@ -1,8 +1,6 @@
 package dev.awd.injaaz.presentation
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +9,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -31,6 +30,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -38,6 +38,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.SubcomposeAsyncImage
 import dev.awd.injaaz.R
 import dev.awd.injaaz.presentation.notes.NotesScreen
 import dev.awd.injaaz.presentation.tasks.TasksScreen
@@ -47,8 +48,8 @@ import dev.awd.injaaz.ui.theme.pilat_extended
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    userName: String = "username",
-    @DrawableRes userAvatar: Int = R.drawable.user,
+    userName: String,
+    userAvatar: String,
     onAddButtonClick: (Int) -> Unit,
     onUserAvatarClick: () -> Unit,
     onTaskItemClick: (Int) -> Unit,
@@ -141,7 +142,7 @@ fun InjaazTopBar(
     modifier: Modifier = Modifier,
     title: String = "Welcome Back!",
     subtitle: String,
-    @DrawableRes icon: Int,
+    icon: String,
     onIconClick: () -> Unit
 ) {
     TopAppBar(modifier = modifier,
@@ -165,16 +166,27 @@ fun InjaazTopBar(
             }
         },
         actions = {
-            Image(
-                painter = painterResource(id = icon),
+            SubcomposeAsyncImage(
+                model = icon,
                 contentDescription = subtitle,
                 contentScale = ContentScale.FillBounds,
+                loading = {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.scale(0.5f)
+                    )
+                },
+                error = {
+                    Image(
+                        painter = painterResource(id = R.drawable.user),
+                        contentDescription = null
+                    )
+                },
                 modifier = Modifier
+                    .clip(CircleShape)
                     .padding(12.dp)
                     .size(48.dp)
                     .shadow(shape = CircleShape, elevation = 8.dp, clip = true)
-                    .background(MaterialTheme.colorScheme.primary)
-                    .clip(CircleShape)
                     .padding(4.dp)
                     .clickable { onIconClick() }
             )
@@ -189,7 +201,7 @@ private fun HomePreview() {
     InjaazTheme {
         HomeScreen(
             userName = "Mahmoud Awad",
-            userAvatar = R.drawable.user,
+            userAvatar = "",
             onUserAvatarClick = {},
             onAddButtonClick = {},
             onTaskItemClick = {},
