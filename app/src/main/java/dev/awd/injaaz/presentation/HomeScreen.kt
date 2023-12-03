@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import dev.awd.injaaz.R
 import dev.awd.injaaz.presentation.notes.NotesScreen
-import dev.awd.injaaz.presentation.tasks.TasksScreen
+import dev.awd.injaaz.presentation.tasks.TasksRoute
 import dev.awd.injaaz.ui.theme.InjaazTheme
 import dev.awd.injaaz.ui.theme.pilat_extended
 
@@ -54,7 +54,6 @@ fun HomeScreen(
     onUserAvatarClick: () -> Unit,
     onTaskItemClick: (Int) -> Unit,
     onNoteItemClick: (Int) -> Unit,
-
     ) {
 
     var selectedItemIndex by rememberSaveable {
@@ -123,7 +122,7 @@ fun HomeScreen(
 
     ) { paddingValues ->
         when (selectedItemIndex) {
-            0 -> TasksScreen(
+            0 -> TasksRoute(
                 modifier = modifier.padding(paddingValues),
                 onTaskClick = onTaskItemClick,
             )

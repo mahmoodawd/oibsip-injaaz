@@ -3,6 +3,8 @@ package dev.awd.injaaz.presentation.tasks
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
@@ -45,6 +48,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import dev.awd.injaaz.R
 import dev.awd.injaaz.domain.models.Priority
 import dev.awd.injaaz.domain.models.Task
@@ -56,48 +60,89 @@ import dev.awd.injaaz.utils.extractHourFormatted
 import java.util.Calendar
 
 @Composable
-fun NewTaskScreen(
+fun NewTaskRoute(
     modifier: Modifier = Modifier,
-    onAddTask: (Task) -> Unit = {},
+    viewModel: TasksViewModel = hiltViewModel(),
     onBackPressed: () -> Unit
 ) {
-    var taskTitle = ""
-    var taskDetails = ""
-    var taskDate = ""
-    var taskTime = ""
-    var taskPriority: Priority = Priority.MODERATE
+    val task = Task(
+        title = "",
+        description = "",
+        isCompleted = false,
+        date = Calendar.getInstance().timeInMillis,
+        priority = Priority.MODERATE
+    )
+    var isCreateButtonEnabled by remember {
+        mutableStateOf(task.title.isNotBlank())
+    }
 
+    NewTaskScreen(
+        isCreateButtonEnabled = isCreateButtonEnabled,
+        onTitleChanged = {
+            isCreateButtonEnabled = it.isNotBlank()
+            task.title = it
+        },
+        onDescriptionChanged = { task.description = it },
+        onPriorityChanged = { task.priority = it },
+        onDateChanged = { task.date = it },
+        onTimeChanged = {},
+        onCreateTask = {
+            viewModel.addNewTask(task)
+            onBackPressed()
+        },
+        onBackPressed = onBackPressed,
+        modifier = modifier
+    )
+
+
+}
+
+@Composable
+fun NewTaskScreen(
+    modifier: Modifier = Modifier,
+    isCreateButtonEnabled: Boolean,
+    onTitleChanged: (String) -> Unit,
+    onDescriptionChanged: (String) -> Unit,
+    onPriorityChanged: (Priority) -> Unit,
+    onDateChanged: (Long) -> Unit,
+    onTimeChanged: (Int) -> Unit,
+    onCreateTask: () -> Unit,
+    onBackPressed: () -> Unit
+) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
+            .scrollable(rememberScrollState(), Orientation.Vertical)
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        ScreenHeader(screenTitle = "Create New Task") { onBackPressed() }
-        CustomEditText(label = "Task Title", hint = "Ex. Travel", onValueChanged = {
-            taskTitle = it
-        })
+        ScreenHeader(screenTitle = "Create New Task", actions = {
+            Icon(
+                painter = painterResource(id = R.drawable.ticksquare),
+                contentDescription = null,
+                tint = if (isCreateButtonEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                modifier = modifier.clickable(isCreateButtonEnabled) {
+                    onCreateTask()
+                })
+        }) { onBackPressed() }
+        CustomEditText(
+            label = "Task Title", hint = "Ex. Travel",
+            onValueChanged = onTitleChanged
+        )
         CustomEditText(
             label = "Task Details",
             hint = "Ex.In this day I will travel to a certain place for work",
             singleLine = false,
-            onValueChanged = { taskDetails = it })
-        PrioritySection(onPriorityChanged = { taskPriority = it })
-        TimeDateSection(onDateChanged = { taskDate = it }, onTimeChanged = { taskTime = it })
+            onValueChanged = onDescriptionChanged
+        )
+        PrioritySection(onPriorityChanged = onPriorityChanged)
+        TimeDateSection(onDateChanged = onDateChanged, onTimeChanged = onTimeChanged)
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = {
-                onAddTask(
-                    Task(
-                        title = taskTitle,
-                        description = taskDetails,
-                        date = taskDate,
-                        priority = taskPriority
-                    )
-                )
-            },
+            enabled = isCreateButtonEnabled,
+            onClick = onCreateTask,
+            shape = RoundedCornerShape(size = 6.dp),
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(size = 6.dp)
         ) {
             Text(
                 text = "Create",
@@ -109,13 +154,13 @@ fun NewTaskScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomEditText(
     modifier: Modifier = Modifier,
     label: String,
     hint: String = label,
     singleLine: Boolean = true,
+    maxLines: Int = 5,
     onValueChanged: (String) -> Unit
 ) {
     var text by rememberSaveable {
@@ -135,6 +180,7 @@ fun CustomEditText(
                 onValueChanged(it)
             },
             singleLine = singleLine,
+            maxLines = maxLines,
             colors = TextFieldDefaults.colors(
                 focusedTextColor = MaterialTheme.colorScheme.primary,
                 unfocusedTextColor = MaterialTheme.colorScheme.primary,
@@ -151,6 +197,7 @@ fun CustomEditText(
         )
     }
 }
+
 
 @Composable
 fun PrioritySection(
@@ -193,8 +240,8 @@ fun PrioritySection(
 @Composable
 fun TimeDateSection(
     modifier: Modifier = Modifier,
-    onTimeChanged: (String) -> Unit,
-    onDateChanged: (String) -> Unit,
+    onTimeChanged: (Int) -> Unit,
+    onDateChanged: (Long) -> Unit,
 ) {
     val calendar = Calendar.getInstance()
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = calendar.timeInMillis)
@@ -219,7 +266,7 @@ fun TimeDateSection(
             text = extractHourFormatted(calendar.timeInMillis),
             icon = R.drawable.clock,
             onPicked = {
-                onTimeChanged(timePickerState.hour.toString())
+                onTimeChanged(timePickerState.hour)
             }) {
             TimePicker(
                 modifier = Modifier
@@ -241,7 +288,7 @@ fun TimeDateSection(
         PickerItem(
             text = extractDateFormatted(datePickerState.selectedDateMillis!!),
             icon = R.drawable.calendar,
-            onPicked = { onDateChanged(datePickerState.selectedDateMillis.toString()) }
+            onPicked = { onDateChanged(datePickerState.selectedDateMillis!!) }
         ) {
             DatePicker(
                 headline = null,
@@ -249,7 +296,7 @@ fun TimeDateSection(
                 state = datePickerState, showModeToggle = false, colors = DatePickerDefaults.colors(
                     containerColor = MaterialTheme.colorScheme.onBackground,
                     yearContentColor = MaterialTheme.colorScheme.onSurface,
-                    //YearPicker button takes the onSurfaceVariant color(Not included here)
+                    //YearPicker menu button takes the onSurfaceVariant color(Not included here)
                 )
             )
         }
@@ -263,7 +310,7 @@ fun PickerItem(
     text: String,
     @DrawableRes icon: Int,
     onPicked: () -> Unit,
-    content: @Composable() (ColumnScope.() -> Unit)
+    content: @Composable (ColumnScope.() -> Unit)
 ) {
     var showPickerDialog by remember {
         mutableStateOf(false)
@@ -308,25 +355,25 @@ fun PickerItem(
                     Text(text = "Confirm")
                 }
             },
-            dismissButton = {
-                TextButton(onClick = {
-                    showPickerDialog = false
-                }) {
-                    Text(text = "Cancel")
-                }
-            },
             content = content
         )
     }
 }
 
+
 @Preview
 @Composable
 private fun NewTaskPreview() {
     InjaazTheme {
-        NewTaskScreen(onAddTask = {}) {
-
-        }
+        NewTaskScreen(
+            isCreateButtonEnabled = false,
+            onTitleChanged = {},
+            onDescriptionChanged = {},
+            onPriorityChanged = {},
+            onDateChanged = {},
+            onTimeChanged = {},
+            onCreateTask = {},
+            onBackPressed = {})
     }
 }
 

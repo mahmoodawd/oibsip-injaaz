@@ -1,6 +1,6 @@
-package dev.awd.injaaz.presentation.auth
+package dev.awd.injaaz.domain.models
 
-data class UserData(
+data class User(
     val userId: String,
     val userName: String?,
     val email: String?,

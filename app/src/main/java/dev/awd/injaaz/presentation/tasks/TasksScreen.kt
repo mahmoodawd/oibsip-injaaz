@@ -1,5 +1,8 @@
 package dev.awd.injaaz.presentation.tasks
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,71 +19,105 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DismissDirection
+import androidx.compose.material3.DismissValue
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.awd.injaaz.R
 import dev.awd.injaaz.domain.models.Priority
 import dev.awd.injaaz.domain.models.Task
 import dev.awd.injaaz.presentation.components.InjaazSearchBar
 import dev.awd.injaaz.ui.theme.InjaazTheme
+import dev.awd.injaaz.utils.extractDateFormatted
+import kotlinx.coroutines.delay
+
+@Composable
+fun TasksRoute(
+    modifier: Modifier = Modifier,
+    viewModel: TasksViewModel = hiltViewModel(),
+    onTaskClick: (Int) -> Unit
+) {
+
+    val tasksUiState by viewModel.tasksUiState.collectAsStateWithLifecycle()
+
+    TasksScreen(
+        tasksUiState = tasksUiState,
+        onTaskClick = onTaskClick,
+        onTaskDismissed = viewModel::deleteTask,
+        onTaskChecked = viewModel::updateTask,
+        modifier = modifier
+    )
+}
 
 @Composable
 fun TasksScreen(
     modifier: Modifier = Modifier,
-    onTaskClick: (Int) -> Unit
+    tasksUiState: TasksUiState,
+    onTaskClick: (Int) -> Unit,
+    onTaskDismissed: (Task) -> Unit,
+    onTaskChecked: (Task, Boolean) -> Unit,
 ) {
-    val tasks = listOf(
-        Task(
-            title = "Task1",
-            description = "This is Task one description",
-            date = "25 Jan",
-            isCompleted = true,
-            priority = Priority.HIGH
-        ),
-        Task(
-            title = "Task2",
-            description = "This is Task Two description",
-            date = "25 Jan",
-            isCompleted = true,
-            priority = Priority.MODERATE
-        ),
-        Task(
-            title = "Task Test",
-            description = "This is Task one description",
-            date = "25 Jan",
-            isCompleted = false,
-            priority = Priority.HIGH
-        )
-    )
-    if (tasks.isEmpty()) NoTasksView(modifier = modifier)
-    else {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        when (tasksUiState) {
+            TasksUiState.Empty -> NoTasksView()
 
-            InjaazSearchBar(hint = "Search tasks", onValueChanged = {}, onFilter = {})
-            TaskView(tasks = tasks, onTaskClick = onTaskClick, onTaskChecked = {})
+            TasksUiState.Loading -> CircularProgressIndicator(
+                Modifier
+                    .align(CenterHorizontally)
+                    .scale(1.5f)
+            )
+
+            is TasksUiState.Tasks -> {
+                InjaazSearchBar(hint = "Search tasks", onValueChanged = {}, onFilter = {})
+                TasksView(
+                    tasks = tasksUiState.tasks,
+                    onTaskClick = onTaskClick,
+                    onTaskDismissed = onTaskDismissed,
+                    onTaskChecked = onTaskChecked
+                )
+            }
+
         }
     }
-
 }
+
 
 @Composable
 fun NoTasksView(
@@ -108,13 +145,14 @@ fun NoTasksView(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TaskView(
+fun TasksView(
     modifier: Modifier = Modifier,
     tasks: List<Task>,
     onTaskClick: (Int) -> Unit,
-    onTaskChecked: (Boolean) -> Unit,
+    onTaskDismissed: (Task) -> Unit,
+    onTaskChecked: (Task, Boolean) -> Unit,
 ) {
-    LazyColumn(modifier = modifier) {
+    LazyColumn(state = rememberLazyListState(), modifier = modifier) {
         stickyHeader {
             Text(
                 text = "All Tasks",
@@ -123,16 +161,100 @@ fun TaskView(
                 fontWeight = FontWeight.Bold,
             )
         }
-        items(tasks) {
-            TaskItem(
-                title = it.title,
-                isCompleted = it.isCompleted,
-                onTaskClick = { onTaskClick(it.hashCode()) },
-                onTaskChecked = onTaskChecked
+        items(tasks, key = { it.id }) { task ->
+            var isTaskCompleted by remember {
+                mutableStateOf(task.isCompleted)
+
+            }
+            SwipableTaskItem(
+                title = task.title,
+                isCompleted = isTaskCompleted,
+                onTaskClick = { onTaskClick(task.id) },
+                onTaskDismissed = { onTaskDismissed(task) },
+                onTaskChecked = { isChecked ->
+                    isTaskCompleted = isChecked
+                    onTaskChecked(task, isChecked)
+                }
             )
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SwipableTaskItem(
+    modifier: Modifier = Modifier,
+    title: String,
+    isCompleted: Boolean,
+    onTaskClick: () -> Unit,
+    onTaskDismissed: () -> Unit,
+    onTaskChecked: (Boolean) -> Unit
+) {
+    var dismiss by remember { mutableStateOf(false) }
+
+    val dismissState = rememberDismissState(
+        confirmValueChange = {
+            if (it == DismissValue.DismissedToEnd) {
+                dismiss = true
+                true
+            } else false
+        }, positionalThreshold = { 150.dp.toPx() }
+    )
+
+    LaunchedEffect(key1 = dismiss) {
+        if (dismiss) {
+            delay(800)
+            onTaskDismissed()
+        }
+    }
+
+    AnimatedVisibility(visible = !dismiss, exit = fadeOut(spring())) {
+
+        SwipeToDismiss(modifier = modifier,
+            state = dismissState,
+            directions = setOf(DismissDirection.StartToEnd),
+            background = { DismissBackground() },
+            dismissContent = {
+                TaskItem(
+                    title = title,
+                    isCompleted = isCompleted,
+                    onTaskClick = onTaskClick,
+                    onTaskChecked = onTaskChecked
+                )
+            })
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DismissBackground(dismissDirection: DismissDirection = DismissDirection.StartToEnd) {
+    val color = when (dismissDirection) {
+        DismissDirection.StartToEnd -> Color(0xFFFF1744)
+        DismissDirection.EndToStart -> Color(0xFF1DE9B6)
+        null -> Color.Transparent
+    }
+
+    Row(
+        modifier = Modifier
+            .padding(vertical = 6.dp)
+            .fillMaxSize()
+            .background(color),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        if (dismissDirection == DismissDirection.StartToEnd) Icon(
+            imageVector = Icons.Default.Delete,
+            contentDescription = "delete"
+        )
+        Spacer(modifier = Modifier)
+        if (dismissDirection == DismissDirection.EndToStart) Icon(
+            imageVector = Icons.Default.ExitToApp,
+            contentDescription = "Archive"
+        )
+    }
+}
+
 
 @Composable
 fun TaskItem(
@@ -151,6 +273,7 @@ fun TaskItem(
     ) {
         Text(
             text = title,
+            textDecoration = if (isCompleted) TextDecoration.LineThrough else null,
             color = Color.White,
             modifier = Modifier
                 .clickable { onTaskClick() }
@@ -159,22 +282,16 @@ fun TaskItem(
         Spacer(modifier = Modifier
             .weight(1f)
             .clickable { onTaskClick() })
-        IconButton(
-            onClick = { onTaskChecked(false) },
-            colors = IconButtonDefaults.iconButtonColors(
-                contentColor = Color.Black,
-                containerColor = MaterialTheme.colorScheme.primary
-            ),
+        Checkbox(
+            checked = isCompleted, colors = CheckboxDefaults.colors(
+                checkmarkColor = Color.Black,
+                uncheckedColor = Color.Black
+            ), onCheckedChange = onTaskChecked,
             modifier = Modifier
-                .padding(4.dp)
-        ) {
-            Icon(
-                painter = painterResource(id = if (isCompleted) R.drawable.tickcircle else R.drawable.emptycircle),
-                contentDescription = null,
-            )
-        }
+                .padding(8.dp)
+                .background(MaterialTheme.colorScheme.primary)
+        )
     }
-
 }
 
 @Composable
@@ -193,9 +310,9 @@ fun CompletedTasksRow(
             modifier = Modifier
                 .padding(8.dp)
         )
-        LazyRow(modifier = Modifier.align(Alignment.CenterHorizontally)) {
+        LazyRow(modifier = Modifier.align(CenterHorizontally)) {
             items(tasks) { task ->
-                TasksRowItem(title = task.title, date = task.date)
+                TasksRowItem(title = task.title, date = extractDateFormatted(task.date))
             }
         }
     }
@@ -248,28 +365,75 @@ fun OngoingTasksColumn(
             )
         }
         items(tasks) {
-
+            OngoingTaskItem(title = it.title, date = it.date)
         }
     }
 }
 
 @Composable
-fun TaskColumnItem(
+fun OngoingTaskItem(
     modifier: Modifier = Modifier,
     title: String,
-    date: String
-) {
+    date: Long
+) {}
 
-}
 
 @Preview
 @Composable
 private fun TasksPreview() {
     InjaazTheme {
         TasksScreen(
-            modifier = Modifier.padding(8.dp),
+            tasksUiState = TasksUiState.Tasks(
+                tasks = listOf(
+                    Task(
+                        id = 1,
+                        title = "Task 1",
+                        description = "",
+                        isCompleted = true,
+                        date = 144,
+                        priority = Priority.MODERATE
+                    ),
+                    Task(
+                        id = 2,
+                        title = "Task 2",
+                        description = "",
+                        date = 144,
+                        priority = Priority.MODERATE
+                    ),
+                    Task(
+                        id = 3,
+                        title = "Task 3",
+                        description = "",
+                        date = 144,
+                        priority = Priority.MODERATE
+                    ),
+                    Task(
+                        id = 4,
+                        title = "Task 4",
+                        description = "",
+                        isCompleted = true,
+                        date = 144,
+                        priority = Priority.MODERATE
+                    ),
+                )
+            ),
             onTaskClick = {},
+            onTaskDismissed = {},
+            onTaskChecked = { _, _ -> }
         )
     }
 
+
+}
+
+@Preview
+@Composable
+private fun NoTasksPreview() {
+    InjaazTheme {
+        TasksScreen(
+            tasksUiState = TasksUiState.Empty,
+            onTaskClick = {},
+            onTaskDismissed = {},
+            onTaskChecked = { _, _ -> })
+    }
 }

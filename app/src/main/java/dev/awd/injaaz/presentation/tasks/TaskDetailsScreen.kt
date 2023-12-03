@@ -9,16 +9,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import dev.awd.injaaz.R
 import dev.awd.injaaz.domain.models.Priority
 import dev.awd.injaaz.domain.models.Task
@@ -26,18 +31,35 @@ import dev.awd.injaaz.presentation.components.ScreenHeader
 import dev.awd.injaaz.ui.theme.InjaazTheme
 import dev.awd.injaaz.ui.theme.pilat_extended
 import dev.awd.injaaz.utils.capitalize
+import dev.awd.injaaz.utils.extractDateFormatted
+
 
 @Composable
-fun TaskDetailsScreen(
+fun TaskDetailsRoute(
     modifier: Modifier = Modifier,
     onBackPressed: () -> Unit,
-    task: Task = Task(
-        title = "Task1",
-        description = "This is Task one description",
-        date = "25 Jan",
-        isCompleted = true,
-        priority = Priority.HIGH
+    taskId: Int,
+    viewModel: TaskDetailsViewModel = hiltViewModel()
+) {
+
+    LaunchedEffect(key1 = taskId) {
+
+        viewModel.getTaskDetails(taskId)
+    }
+    val uiState by viewModel.taskDetailsUiStateState.collectAsState()
+    TasksDetailsScreen(
+        uiState = uiState,
+        onBackPressed = onBackPressed,
+        modifier = modifier
     )
+
+}
+
+@Composable
+fun TasksDetailsScreen(
+    modifier: Modifier = Modifier,
+    uiState: TaskDetailsUiState,
+    onBackPressed: () -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -51,48 +73,78 @@ fun TaskDetailsScreen(
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.minimumInteractiveComponentSize()
             )
-           /* Icon(
-                painter = painterResource(id = R.drawable.delete),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = modifier.minimumInteractiveComponentSize()
-            )*/
         })
-        Text(
-            text = task.title,
-            style = MaterialTheme.typography.titleLarge,
-            fontFamily = pilat_extended,
-            color = MaterialTheme.colorScheme.secondary,
-        )
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = 12.dp)
-        ) {
-            PropertyView(icon = R.drawable.calendar, title = "Due Date", subtitle = task.date)
-            PropertyView(
-                icon = R.drawable.priority,
-                title = "Priority",
-                subtitle = task.priority.name.lowercase().capitalize()
-            )
-        }
-        Text(
-            text = "Task Details",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.secondary
-        )
-        Text(
-            text = task.description,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        when (uiState) {
+            TaskDetailsUiState.Loading -> {
+                CircularProgressIndicator()
+            }
 
+            is TaskDetailsUiState.Error -> {
+                Text(text = uiState.msg)
+            }
+
+            is TaskDetailsUiState.TaskDetails -> {
+                val taskDetails = uiState.task
+
+                Text(
+                    text = taskDetails.title,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontFamily = pilat_extended,
+                    color = MaterialTheme.colorScheme.secondary,
+                )
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 12.dp)
+                ) {
+                    PropertyItem(
+                        icon = R.drawable.calendar,
+                        title = "Due Date",
+                        subtitle = extractDateFormatted(taskDetails.date)
+                    )
+                    PropertyItem(
+                        icon = R.drawable.priority,
+                        title = "Priority",
+                        subtitle = taskDetails.priority.name.lowercase().capitalize()
+                    )
+                }
+                Text(
+                    text = "Task Details",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+                Text(
+                    text = taskDetails.description,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+               /* Switch(
+                    checked = true,
+                    colors = SwitchDefaults.colors(
+                        uncheckedTrackColor = MaterialTheme.colorScheme.onSurface,
+                        uncheckedIconColor = MaterialTheme.colorScheme.onBackground,
+                        checkedIconColor = MaterialTheme.colorScheme.primary
+                    ),
+                    thumbContent = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.tickcircle),
+                            contentDescription = null,
+                        )
+                    },
+                    onCheckedChange = {},
+                    modifier = Modifier
+                        .align(CenterHorizontally)
+                )*/
+
+            }
+        }
     }
+
 }
 
 @Composable
-fun PropertyView(
+fun PropertyItem(
     modifier: Modifier = Modifier,
     @DrawableRes icon: Int,
     title: String,
@@ -131,13 +183,16 @@ fun PropertyView(
 @Composable
 private fun TaskDetailsPreview() {
     InjaazTheme {
-        TaskDetailsScreen(
-            onBackPressed = { /*TODO*/ }, task = Task(
-                title = "Task Title",
-                description = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled",
-                date = "20 Jun",
-                priority = Priority.HIGH
-            )
+        TasksDetailsScreen(
+            uiState = TaskDetailsUiState.TaskDetails(
+                task = Task(
+                    title = "Task Title",
+                    description = "Task Description",
+                    date = 125574,
+                    priority = Priority.MODERATE,
+                )
+            ),
+            onBackPressed = {},
         )
     }
 }
