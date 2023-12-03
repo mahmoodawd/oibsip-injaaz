@@ -1,5 +1,8 @@
 package dev.awd.injaaz
 
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+
 interface Destination {
     val route: String
 }
@@ -42,6 +45,11 @@ object NewTaskDest : Destination {
 object TaskDetailsDest : Destination {
     override val route: String
         get() = "task-details-screen"
+    const val taskIdArg: String = "tasksId"
+    val routeWithArgs: String = "$route/{$taskIdArg}"
+    val arguments = listOf(
+        navArgument(taskIdArg) { type = NavType.IntType }
+    )
 }
 
 object NotesDest : Destination {

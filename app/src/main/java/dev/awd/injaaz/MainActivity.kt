@@ -17,20 +17,30 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import dagger.hilt.android.AndroidEntryPoint
 import dev.awd.injaaz.presentation.HomeScreen
+import dev.awd.injaaz.presentation.auth.AuthUiClient
 import dev.awd.injaaz.presentation.auth.GoogleAuthUiClient
 import dev.awd.injaaz.presentation.auth.WelcomeScreen
 import dev.awd.injaaz.presentation.notes.NewNoteScreen
 import dev.awd.injaaz.presentation.settings.SettingsScreen
-import dev.awd.injaaz.presentation.tasks.NewTaskScreen
-import dev.awd.injaaz.presentation.tasks.TaskDetailsScreen
+import dev.awd.injaaz.presentation.tasks.NewTaskRoute
+import dev.awd.injaaz.presentation.tasks.TaskDetailsRoute
 import dev.awd.injaaz.ui.theme.InjaazTheme
+import timber.log.Timber
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var googleAuthUiClient: AuthUiClient
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -40,7 +50,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    InjaazNavHost(navController)
+                    InjaazNavHost(navController, googleAuthUiClient)
                 }
             }
         }
@@ -50,12 +60,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun InjaazNavHost(
     navController: NavHostController,
+    googleAuthUiClient: AuthUiClient,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val googleAuthUiClient by lazy {
-        GoogleAuthUiClient(context)
-    }
     val currentUser = googleAuthUiClient.getSignedInUser()
     var startDestination by remember {
         mutableStateOf(WelcomeDest.route)
@@ -81,7 +89,7 @@ fun InjaazNavHost(
                     navController.navigate(HomeDest.route)
                 })
         }
-        composable(route = HomeDest.route) {
+        composable(route = HomeDest.route) { backStackEntry ->
             HomeScreen(userName = currentUser?.userName ?: "",
                 userAvatar = currentUser?.profilePhotoUrl ?: "",
                 onAddButtonClick = { screenIndex ->
@@ -92,14 +100,24 @@ fun InjaazNavHost(
 
                 },
                 onUserAvatarClick = { navController.navigate(SettingsDest.route) },
-                onTaskItemClick = { navController.navigate(TaskDetailsDest.route) },
+                onTaskItemClick = {
+                    navController.navigateToTaskDetails(it)
+                },
                 onNoteItemClick = { navController.navigate(NewNoteDest.route) })
         }
         composable(route = NewTaskDest.route) {
-            NewTaskScreen(onBackPressed = { navController.popBackStack() })
+            NewTaskRoute(onBackPressed = { navController.popBackStack() })
         }
-        composable(route = TaskDetailsDest.route) {
-            TaskDetailsScreen(onBackPressed = { navController.popBackStack() })
+        composable(
+            route = TaskDetailsDest.routeWithArgs,
+            arguments = TaskDetailsDest.arguments
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getInt(TaskDetailsDest.taskIdArg) ?: 0
+            Timber.d("Retrieved Task ID: $id")
+
+            TaskDetailsRoute(
+                taskId = id,
+                onBackPressed = { navController.popBackStack() })
         }
 
         composable(route = NewNoteDest.route) {
@@ -118,6 +136,13 @@ fun InjaazNavHost(
 @Composable
 fun GreetingPreview() {
     InjaazTheme {
-        InjaazNavHost(rememberNavController())
+        InjaazNavHost(
+            rememberNavController(),
+            GoogleAuthUiClient(LocalContext.current)
+        )
     }
+}
+
+fun NavController.navigateToTaskDetails(taskId: Int) {
+    navigate("${TaskDetailsDest.route}/$taskId")
 }

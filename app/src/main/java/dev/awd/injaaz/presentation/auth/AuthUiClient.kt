@@ -10,20 +10,23 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.awd.injaaz.R
+import dev.awd.injaaz.domain.models.User
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.CancellationException
+import javax.inject.Inject
 
 interface AuthUiClient {
-    fun getSignedInUser(): UserData?
+    fun getSignedInUser(): User?
     suspend fun signOut()
     suspend fun signIn(): IntentSender?
     suspend fun getSignInResultFromIntent(intent: Intent): SignInResult
     suspend fun signInWithIdToken(googleIdToken: String): SignInResult
 }
 
-class GoogleAuthUiClient(
-    private val context: Context,
+class GoogleAuthUiClient @Inject constructor(
+    @ApplicationContext private val context: Context,
 ) : AuthUiClient {
 
     private val oneTapClient: SignInClient = Identity.getSignInClient(context)
@@ -81,7 +84,7 @@ class GoogleAuthUiClient(
         }
     }
 
-    override fun getSignedInUser(): UserData? =
+    override fun getSignedInUser(): User? =
         auth.currentUser?.toUserData()
 
     override suspend fun signOut() {
@@ -97,12 +100,12 @@ class GoogleAuthUiClient(
 }
 
 data class SignInResult(
-    val user: UserData? = null,
+    val user: User? = null,
     val errorMessage: String? = null
 )
 
-fun FirebaseUser.toUserData(): UserData =
-    UserData(
+fun FirebaseUser.toUserData(): User =
+    User(
         userId = uid,
         userName = displayName,
         profilePhotoUrl = photoUrl.toString(),
