@@ -8,23 +8,25 @@ import dev.awd.injaaz.data.mappers.toTaskEntity
 import dev.awd.injaaz.domain.models.Task
 import dev.awd.injaaz.domain.repository.TasksRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
+@Suppress("UNCHECKED_CAST")
 class TasksRepoImpl @Inject constructor(
     private val tasksDao: TasksDao,
     private val firebaseAuth: FirebaseAuth
 ) : TasksRepository {
 
-    override fun getAllTasks() = flow {
+    override fun <T> getAllTasks(): Flow<Result<T>> = flow {
         emit(
             try {
                 val userTasks = tasksDao.getAllTask(firebaseAuth.uid ?: "")
                     .map { it.toTask() }
 
-                Result.Success(userTasks)
+                Result.Success(userTasks as T)
 
             } catch (e: Exception) {
                 Result.Failure(e.message ?: "Unknown Error")
@@ -54,10 +56,10 @@ class TasksRepoImpl @Inject constructor(
         }
 
 
-    override suspend fun getTaskById(taskId: Int) = flowOf(
+    override suspend fun <T> getTaskById(taskId: Int): Flow<Result<T>> = flowOf(
         try {
             Result.Success(
-                tasksDao.getTaskById(taskId).toTask()
+                tasksDao.getTaskById(taskId).toTask() as T
             )
         } catch (e: Exception) {
             Result.Failure(e.message ?: "Unknown Error")

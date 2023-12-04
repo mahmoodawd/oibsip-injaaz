@@ -29,8 +29,7 @@ import dev.awd.injaaz.presentation.auth.GoogleAuthUiClient
 import dev.awd.injaaz.presentation.auth.WelcomeScreen
 import dev.awd.injaaz.presentation.notes.notesdetails.NoteDetailsRoute
 import dev.awd.injaaz.presentation.settings.SettingsScreen
-import dev.awd.injaaz.presentation.tasks.NewTaskRoute
-import dev.awd.injaaz.presentation.tasks.TaskDetailsRoute
+import dev.awd.injaaz.presentation.tasks.taskdetails.TaskDetailsRoute
 import dev.awd.injaaz.ui.theme.InjaazTheme
 import javax.inject.Inject
 
@@ -93,37 +92,27 @@ fun InjaazNavHost(
                 userAvatar = currentUser?.profilePhotoUrl ?: "",
                 onAddButtonClick = { screenIndex ->
                     when (screenIndex) {
-                        0 -> navController.navigate(NewTaskDest.route)
+                        0 -> navController.navigateToTaskDetails(-1)
                         1 -> navController.navigateToNoteDetails(-1)
                     }
 
                 },
                 onUserAvatarClick = { navController.navigate(SettingsDest.route) },
-                onTaskItemClick = {
-                    navController.navigateToTaskDetails(it)
-                },
+                onTaskItemClick = { navController.navigateToTaskDetails(it) },
                 onNoteItemClick = { navController.navigateToNoteDetails(it) })
         }
-        composable(route = NewTaskDest.route) {
-            NewTaskRoute(onBackPressed = { navController.popBackStack() })
-        }
+
         composable(
             route = TaskDetailsDest.routeWithArgs,
-            arguments = TaskDetailsDest.arguments
-        ) { backStackEntry ->
-            val id = backStackEntry.arguments?.getInt(TaskDetailsDest.taskIdArg) ?: 0
-
-            TaskDetailsRoute(
-                taskId = id,
-                onBackPressed = { navController.popBackStack() })
-        }
+            arguments = TaskDetailsDest.arguments,
+            content = { TaskDetailsRoute(onBackPressed = { navController.popBackStack() }) }
+        )
 
         composable(
-            route = NewNoteDest.routeWithArgs,
-            arguments = NewNoteDest.arguments
-        ) {
-            NoteDetailsRoute { navController.popBackStack() }
-        }
+            route = NoteDetailsDest.routeWithArgs,
+            arguments = NoteDetailsDest.arguments,
+            content = { NoteDetailsRoute { navController.popBackStack() } }
+        )
         composable(route = SettingsDest.route) {
             SettingsScreen(googleAuthUiClient = googleAuthUiClient, onLogoutSuccess = {
                 navController.navigate(WelcomeDest.route)
@@ -149,5 +138,5 @@ fun NavController.navigateToTaskDetails(taskId: Int) {
 }
 
 fun NavController.navigateToNoteDetails(noteId: Int) {
-    navigate("${NewNoteDest.route}/$noteId")
+    navigate("${NoteDetailsDest.route}/$noteId")
 }

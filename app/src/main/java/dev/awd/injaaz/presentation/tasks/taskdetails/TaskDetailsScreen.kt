@@ -1,4 +1,4 @@
-package dev.awd.injaaz.presentation.tasks
+package dev.awd.injaaz.presentation.tasks.taskdetails
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
@@ -34,11 +35,10 @@ import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,9 +49,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.awd.injaaz.R
 import dev.awd.injaaz.domain.models.Priority
-import dev.awd.injaaz.domain.models.Task
 import dev.awd.injaaz.presentation.components.ScreenHeader
 import dev.awd.injaaz.ui.theme.InjaazTheme
 import dev.awd.injaaz.utils.capitalize
@@ -59,55 +59,49 @@ import dev.awd.injaaz.utils.extractDateFormatted
 import dev.awd.injaaz.utils.extractHourFormatted
 import java.util.Calendar
 
+
 @Composable
-fun NewTaskRoute(
+fun TaskDetailsRoute(
     modifier: Modifier = Modifier,
-    viewModel: TasksViewModel = hiltViewModel(),
-    onBackPressed: () -> Unit
+    onBackPressed: () -> Unit,
+    viewModel: TaskDetailsViewModel = hiltViewModel()
 ) {
-    val task = Task(
-        title = "",
-        description = "",
-        isCompleted = false,
-        date = Calendar.getInstance().timeInMillis,
-        priority = Priority.MODERATE
-    )
-    var isCreateButtonEnabled by remember {
-        mutableStateOf(task.title.isNotBlank())
+
+    val uiState by viewModel.taskDetailsUiState.collectAsStateWithLifecycle()
+    val isCreateButtonEnabled by viewModel.isCreateButtonEnabled.collectAsStateWithLifecycle()
+    val hasNoteBeenSaved by viewModel.hasNoteBeenSaved.collectAsStateWithLifecycle()
+
+    LaunchedEffect(key1 = hasNoteBeenSaved) {
+        if (hasNoteBeenSaved) onBackPressed()
     }
 
-    NewTaskScreen(
+    TasksDetailsScreen(
+        uiState = uiState,
         isCreateButtonEnabled = isCreateButtonEnabled,
-        onTitleChanged = {
-            isCreateButtonEnabled = it.isNotBlank()
-            task.title = it
-        },
-        onDescriptionChanged = { task.description = it },
-        onPriorityChanged = { task.priority = it },
-        onDateChanged = { task.date = it },
-        onTimeChanged = {},
-        onCreateTask = {
-            viewModel.addNewTask(task)
-            onBackPressed()
-        },
+        onTitleChanged = viewModel::onTaskTitleChanged,
+        onTaskDetailsChanged = viewModel::onTaskDetailsChanged,
+        onDateChanged = viewModel::onTaskDateChanged,
+        onTimeChanged = viewModel::onTaskTimeChanged,
+        onPriorityChanged = viewModel::onTaskPriorityChanged,
+        onCreateTask = viewModel::saveTask,
         onBackPressed = onBackPressed,
         modifier = modifier
     )
 
-
 }
 
 @Composable
-fun NewTaskScreen(
+fun TasksDetailsScreen(
     modifier: Modifier = Modifier,
+    uiState: TaskDetailsUiState,
     isCreateButtonEnabled: Boolean,
     onTitleChanged: (String) -> Unit,
-    onDescriptionChanged: (String) -> Unit,
-    onPriorityChanged: (Priority) -> Unit,
+    onTaskDetailsChanged: (String) -> Unit,
     onDateChanged: (Long) -> Unit,
     onTimeChanged: (Int) -> Unit,
+    onPriorityChanged: (Priority) -> Unit,
     onCreateTask: () -> Unit,
-    onBackPressed: () -> Unit
+    onBackPressed: () -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -116,40 +110,61 @@ fun NewTaskScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        ScreenHeader(screenTitle = "Create New Task", actions = {
+        ScreenHeader(screenTitle = "Task Details", onBackPressed = onBackPressed, actions = {
             Icon(
                 painter = painterResource(id = R.drawable.ticksquare),
                 contentDescription = null,
                 tint = if (isCreateButtonEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
-                modifier = modifier.clickable(isCreateButtonEnabled) {
-                    onCreateTask()
-                })
-        }) { onBackPressed() }
-        CustomEditText(
-            label = "Task Title", hint = "Ex. Travel",
-            onValueChanged = onTitleChanged
-        )
-        CustomEditText(
-            label = "Task Details",
-            hint = "Ex.In this day I will travel to a certain place for work",
-            singleLine = false,
-            onValueChanged = onDescriptionChanged
-        )
-        PrioritySection(onPriorityChanged = onPriorityChanged)
-        TimeDateSection(onDateChanged = onDateChanged, onTimeChanged = onTimeChanged)
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            enabled = isCreateButtonEnabled,
-            onClick = onCreateTask,
-            shape = RoundedCornerShape(size = 6.dp),
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(
-                text = "Create",
-                color = Color.Black,
-                fontWeight = FontWeight.Bold,
-                modifier = modifier.padding(8.dp)
+                modifier = modifier.clickable(
+                    enabled = isCreateButtonEnabled,
+                    onClick = onCreateTask
+                )
             )
+        })
+        Spacer(modifier = Modifier.height(4.dp))
+        when (uiState) {
+            is TaskDetailsUiState.Error -> {}
+            TaskDetailsUiState.Loading -> CircularProgressIndicator()
+            is TaskDetailsUiState.TaskDetails -> {
+
+                CustomEditText(
+                    text = uiState.taskTitle,
+                    label = "Task Title", hint = "Ex. Travel",
+                    onValueChanged = onTitleChanged
+                )
+
+                CustomEditText(
+                    text = uiState.taskDetails,
+                    label = "Task Details",
+                    hint = "Describe Your task",
+                    singleLine = false,
+                    onValueChanged = onTaskDetailsChanged
+                )
+                PrioritySection(
+                    priority = uiState.taskPriority,
+                    onPriorityChanged = onPriorityChanged
+                )
+                TimeDateSection(
+                    onDateChanged = onDateChanged,
+                    taskDate = uiState.taskDate,
+                    taskTime = uiState.taskTime,
+                    onTimeChanged = onTimeChanged
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    enabled = isCreateButtonEnabled,
+                    onClick = onCreateTask,
+                    shape = RoundedCornerShape(size = 6.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text = "Save",
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold,
+                        modifier = modifier.padding(8.dp)
+                    )
+                }
+            }
         }
     }
 }
@@ -158,14 +173,12 @@ fun NewTaskScreen(
 fun CustomEditText(
     modifier: Modifier = Modifier,
     label: String,
+    text: String,
     hint: String = label,
     singleLine: Boolean = true,
     maxLines: Int = 5,
     onValueChanged: (String) -> Unit
 ) {
-    var text by rememberSaveable {
-        mutableStateOf("")
-    }
     Column(modifier = modifier) {
         Text(
             text = label,
@@ -175,10 +188,7 @@ fun CustomEditText(
         TextField(
             value = text,
             placeholder = { Text(text = hint) },
-            onValueChange = {
-                text = it
-                onValueChanged(it)
-            },
+            onValueChange = onValueChanged,
             singleLine = singleLine,
             maxLines = maxLines,
             colors = TextFieldDefaults.colors(
@@ -202,14 +212,12 @@ fun CustomEditText(
 @Composable
 fun PrioritySection(
     modifier: Modifier = Modifier,
+    priority: Priority,
     onPriorityChanged: (Priority) -> Unit,
 ) {
     val priorityList = listOf(
         Priority.LOW, Priority.MODERATE, Priority.HIGH
     )
-    var selectedPriorityIndex by rememberSaveable {
-        mutableIntStateOf(1)
-    }
     Column(modifier = modifier) {
         Text(
             text = "Set Priority",
@@ -220,14 +228,13 @@ fun PrioritySection(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            priorityList.forEachIndexed { index, priority ->
+            priorityList.forEach { currentPriority ->
                 Text(
-                    text = priority.name.lowercase().capitalize(),
+                    text = currentPriority.name.lowercase().capitalize(),
                     color = MaterialTheme.colorScheme.secondary
                 )
-                RadioButton(selected = selectedPriorityIndex == index, onClick = {
-                    selectedPriorityIndex = index
-                    onPriorityChanged(priority)
+                RadioButton(selected = priority == currentPriority, onClick = {
+                    onPriorityChanged(currentPriority)
                 })
                 Spacer(modifier = Modifier.weight(1f))
             }
@@ -240,11 +247,13 @@ fun PrioritySection(
 @Composable
 fun TimeDateSection(
     modifier: Modifier = Modifier,
+    taskTime: Int,
+    taskDate: Long,
     onTimeChanged: (Int) -> Unit,
     onDateChanged: (Long) -> Unit,
 ) {
     val calendar = Calendar.getInstance()
-    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = calendar.timeInMillis)
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = taskDate)
     val timePickerState = rememberTimePickerState(initialHour = calendar.get(Calendar.HOUR_OF_DAY))
     calendar.set(Calendar.HOUR_OF_DAY, timePickerState.hour)
     calendar.set(Calendar.MINUTE, timePickerState.minute)
@@ -286,7 +295,7 @@ fun TimeDateSection(
             )
         }
         PickerItem(
-            text = extractDateFormatted(datePickerState.selectedDateMillis!!),
+            text = extractDateFormatted(taskDate),
             icon = R.drawable.calendar,
             onPicked = { onDateChanged(datePickerState.selectedDateMillis!!) }
         ) {
@@ -358,23 +367,22 @@ fun PickerItem(
             content = content
         )
     }
-}
 
+}
 
 @Preview
 @Composable
-private fun NewTaskPreview() {
+private fun TaskDetailsPreview() {
     InjaazTheme {
-        NewTaskScreen(
+        TasksDetailsScreen(
+            uiState = TaskDetailsUiState.TaskDetails(),
             isCreateButtonEnabled = false,
             onTitleChanged = {},
-            onDescriptionChanged = {},
-            onPriorityChanged = {},
+            onTaskDetailsChanged = {},
             onDateChanged = {},
             onTimeChanged = {},
+            onPriorityChanged = {},
             onCreateTask = {},
             onBackPressed = {})
     }
 }
-
-

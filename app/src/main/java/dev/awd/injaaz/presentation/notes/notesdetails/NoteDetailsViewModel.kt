@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.awd.injaaz.NewNoteDest
+import dev.awd.injaaz.NoteDetailsDest
 import dev.awd.injaaz.data.Result
 import dev.awd.injaaz.domain.models.Note
 import dev.awd.injaaz.domain.repository.NotesRepository
@@ -17,14 +17,17 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
+private const val NOTE_TITLE_KEY = "noteTitle"
+private const val NOTE_CONTENT_KEY = "noteContent"
+
 @HiltViewModel
 class NoteDetailsViewModel @Inject constructor(
     private val notesRepository: NotesRepository,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val noteTitle = savedStateHandle.getStateFlow("noteTitle", "")
-    private val noteContent = savedStateHandle.getStateFlow("noteContent", "")
+    private val noteTitle = savedStateHandle.getStateFlow(NOTE_TITLE_KEY, "")
+    private val noteContent = savedStateHandle.getStateFlow(NOTE_CONTENT_KEY, "")
 
     var hasNoteBeenSaved = MutableStateFlow(false)
         private set
@@ -32,6 +35,7 @@ class NoteDetailsViewModel @Inject constructor(
         private set
 
     val noteDetailsUiState = combine(noteTitle, noteContent) { title, content ->
+        isCreateButtonEnabled.value = title.isNotBlank() || content.isNotBlank()
         NoteDetailsUiState.NoteDetails(
             noteTitle = title,
             noteContent = content,
@@ -45,7 +49,7 @@ class NoteDetailsViewModel @Inject constructor(
     private var existingNoteId: Int? = null
 
     init {
-        savedStateHandle.get<Int>(NewNoteDest.noteIdArg)?.let { existingNoteId ->
+        savedStateHandle.get<Int>(NoteDetailsDest.noteIdArg)?.let { existingNoteId ->
             if (existingNoteId == -1) {
                 return@let
             }
@@ -57,8 +61,8 @@ class NoteDetailsViewModel @Inject constructor(
                     when (result) {
                         is Result.Success -> {
                             val note = result.data as Note
-                            savedStateHandle["noteTitle"] = note.title
-                            savedStateHandle["noteContent"] = note.content
+                            savedStateHandle[NOTE_TITLE_KEY] = note.title
+                            savedStateHandle[NOTE_CONTENT_KEY] = note.content
                         }
 
                         is Result.Failure -> {}
@@ -69,13 +73,11 @@ class NoteDetailsViewModel @Inject constructor(
     }
 
     fun onNoteTitleChanged(text: String) {
-        savedStateHandle["noteTitle"] = text
-        isCreateButtonEnabled.value = text.isNotBlank()
+        savedStateHandle[NOTE_TITLE_KEY] = text
     }
 
     fun onNoteContentChanged(text: String) {
-        savedStateHandle["noteContent"] = text
-        isCreateButtonEnabled.value = text.isNotBlank()
+        savedStateHandle[NOTE_CONTENT_KEY] = text
     }
 
     fun saveNote() {
@@ -104,4 +106,3 @@ class NoteDetailsViewModel @Inject constructor(
     }
 
 }
-

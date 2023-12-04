@@ -5,7 +5,7 @@ import dev.awd.injaaz.domain.models.Task
 import kotlinx.coroutines.flow.Flow
 
 interface TasksRepository {
-    fun getAllTasks(): Flow<Result>
+    fun <T> getAllTasks(): Flow<Result<T>>
 
     suspend fun createNewTask(task: Task)
 
@@ -13,5 +13,5 @@ interface TasksRepository {
 
     suspend fun updateTask(task: Task)
 
-    suspend fun getTaskById(taskId: Int): Flow<Result>
+    suspend fun <T> getTaskById(taskId: Int): Flow<Result<T>>
 }

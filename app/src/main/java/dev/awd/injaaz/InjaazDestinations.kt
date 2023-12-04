@@ -37,10 +37,6 @@ object SettingsDest : Destination {
         get() = "settings-screen"
 }
 
-object NewTaskDest : Destination {
-    override val route: String
-        get() = "new-task-screen"
-}
 
 object TaskDetailsDest : Destination {
     override val route: String
@@ -48,18 +44,17 @@ object TaskDetailsDest : Destination {
     const val taskIdArg: String = "tasksId"
     val routeWithArgs: String = "$route/{$taskIdArg}"
     val arguments = listOf(
-        navArgument(taskIdArg) { type = NavType.IntType }
+        navArgument(taskIdArg) {
+            type = NavType.IntType
+            defaultValue = -1
+        }
     )
 }
 
-object NotesDest : Destination {
-    override val route: String
-        get() = "notes-screen"
-}
 
-object NewNoteDest : Destination {
+object NoteDetailsDest : Destination {
     override val route: String
-        get() = "new-note-screen"
+        get() = "note-details-screen"
     const val noteIdArg: String = "noteId"
     val routeWithArgs: String = "${route}/{$noteIdArg}"
     val arguments = listOf(

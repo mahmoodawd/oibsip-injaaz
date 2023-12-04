@@ -8,11 +8,12 @@ fun TaskEntity.toTask() =
     Task(
         id = id,
         title = title,
-        description = description,
+        details = description,
         isCompleted = isCompleted,
         priority = Priority.entries.firstOrNull { it.name == this@toTask.priority }
             ?: Priority.MODERATE,
         date = date,
+        time = time
     )
 
 fun Task.toTaskEntity(userId: String) =
@@ -20,8 +21,9 @@ fun Task.toTaskEntity(userId: String) =
         id = id,
         userId = userId,
         title = title,
-        description = description,
+        description = details,
         date = date,
+        time  = time,
         isCompleted = isCompleted,
         priority = priority.name
     )

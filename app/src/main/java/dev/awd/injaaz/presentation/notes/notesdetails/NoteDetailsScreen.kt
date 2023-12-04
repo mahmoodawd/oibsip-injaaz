@@ -73,7 +73,7 @@ fun NoteDetailsScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        ScreenHeader(screenTitle = "Create New Note", onBackPressed = onBackPressed, actions = {
+        ScreenHeader(screenTitle = "Note Details", onBackPressed = onBackPressed, actions = {
             Icon(
                 painter = painterResource(id = R.drawable.ticksquare),
                 contentDescription = null,

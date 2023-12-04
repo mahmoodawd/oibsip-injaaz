@@ -1,4 +1,4 @@
-package dev.awd.injaaz.presentation.tasks
+package dev.awd.injaaz.presentation.tasks.tasklist
 
 import dev.awd.injaaz.domain.models.Task
 

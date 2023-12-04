@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import dev.awd.injaaz.R
 import dev.awd.injaaz.presentation.notes.noteslist.NotesRoute
-import dev.awd.injaaz.presentation.tasks.TasksRoute
+import dev.awd.injaaz.presentation.tasks.tasklist.TasksRoute
 import dev.awd.injaaz.ui.theme.InjaazTheme
 import dev.awd.injaaz.ui.theme.pilat_extended
 

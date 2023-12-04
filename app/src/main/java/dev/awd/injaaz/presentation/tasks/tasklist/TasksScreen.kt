@@ -1,5 +1,6 @@
-package dev.awd.injaaz.presentation.tasks
+package dev.awd.injaaz.presentation.tasks.tasklist
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeOut
@@ -47,6 +48,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -62,6 +64,7 @@ import dev.awd.injaaz.presentation.components.InjaazSearchBar
 import dev.awd.injaaz.ui.theme.InjaazTheme
 import dev.awd.injaaz.utils.extractDateFormatted
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun TasksRoute(
@@ -71,7 +74,16 @@ fun TasksRoute(
 ) {
 
     val tasksUiState by viewModel.tasksUiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
+    LaunchedEffect(key1 = true) {
+        viewModel.loadTasks()
+    }
+    LaunchedEffect(key1 = true) {
+        viewModel.tasksEffect.collectLatest {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
+    }
     TasksScreen(
         tasksUiState = tasksUiState,
         onTaskClick = onTaskClick,
@@ -375,7 +387,8 @@ fun OngoingTaskItem(
     modifier: Modifier = Modifier,
     title: String,
     date: Long
-) {}
+) {
+}
 
 
 @Preview
@@ -388,31 +401,35 @@ private fun TasksPreview() {
                     Task(
                         id = 1,
                         title = "Task 1",
-                        description = "",
+                        details = "",
                         isCompleted = true,
                         date = 144,
+                        time = 144,
                         priority = Priority.MODERATE
                     ),
                     Task(
                         id = 2,
                         title = "Task 2",
-                        description = "",
+                        details = "",
                         date = 144,
+                        time = 144,
                         priority = Priority.MODERATE
                     ),
                     Task(
                         id = 3,
                         title = "Task 3",
-                        description = "",
+                        details = "",
                         date = 144,
+                        time = 144,
                         priority = Priority.MODERATE
                     ),
                     Task(
                         id = 4,
                         title = "Task 4",
-                        description = "",
+                        details = "",
                         isCompleted = true,
                         date = 144,
+                        time = 144,
                         priority = Priority.MODERATE
                     ),
                 )

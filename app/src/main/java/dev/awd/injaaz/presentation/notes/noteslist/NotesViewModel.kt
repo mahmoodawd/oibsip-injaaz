@@ -18,30 +18,19 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val NOTES_KEY = "notes"
+
 @HiltViewModel
 class NotesViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val notesRepository: NotesRepository
 ) : ViewModel() {
 
-    private val notes = savedStateHandle.getStateFlow("notes", emptyList<Note>())
+    private val notes = savedStateHandle.getStateFlow(NOTES_KEY, emptyList<Note>())
     val notesEffect = MutableSharedFlow<String>()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val notesUiState: StateFlow<NotesUiState> =
-        /*notesRepository.getAllNotes<List<Note>>().mapLatest { result ->
-            when (result) {
-                is Result.Success<*> -> {
-                    val notes = result.data ?: emptyList()
-                    if (notes.isEmpty()) NotesUiState.Empty
-                    else {
-                        NotesUiState.Notes(notes = notes)
-                    }
-                }
-
-                is Result.Failure -> NotesUiState.Empty
-            }
-        }*/
         notes.onEach {
             NotesUiState.Loading
         }.mapLatest {
@@ -60,10 +49,8 @@ class NotesViewModel @Inject constructor(
     fun loadNotes() {
         viewModelScope.launch {
             notesRepository.getAllNotes<List<Note>>().collectLatest { result ->
-                savedStateHandle["notes"] = when (result) {
-                    is Result.Success -> {
-                        result.data as List<Note>
-                    }
+                savedStateHandle[NOTES_KEY] = when (result) {
+                    is Result.Success -> result.data as List<Note>
 
                     is Result.Failure -> emptyList()
                 }
@@ -75,10 +62,8 @@ class NotesViewModel @Inject constructor(
         viewModelScope.launch {
             notesRepository.deleteNote(note)
             notesEffect.emit("Note Deleted")
-
             loadNotes()
         }
     }
-
-
+    
 }
