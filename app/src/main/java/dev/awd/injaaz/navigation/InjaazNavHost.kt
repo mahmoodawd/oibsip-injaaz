@@ -24,12 +24,14 @@ import dev.awd.injaaz.presentation.notes.notesdetails.NoteDetailsRoute
 import dev.awd.injaaz.presentation.settings.SettingsScreen
 import dev.awd.injaaz.presentation.tasks.taskdetails.TaskDetailsRoute
 import dev.awd.injaaz.ui.theme.InjaazTheme
+import kotlinx.coroutines.delay
 
 @Composable
 fun InjaazNavHost(
     navController: NavHostController,
     googleAuthUiClient: AuthUiClient,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onSplashTimeOut: () -> Unit
 ) {
     val context = LocalContext.current
     val currentUser = googleAuthUiClient.getSignedInUser()
@@ -39,9 +41,11 @@ fun InjaazNavHost(
 
     //Auto Login
     LaunchedEffect(key1 = Unit) {
-        if (googleAuthUiClient.getSignedInUser() != null) {
+        if (currentUser != null) {
             startDestination = HomeDest.route
         }
+        delay(1000L)
+        onSplashTimeOut()
     }
     NavHost(
         navController = navController,
@@ -54,7 +58,11 @@ fun InjaazNavHost(
                 onEmailButtonClick = {
                     Toast.makeText(context, "SOON", Toast.LENGTH_SHORT).show()
                 }, onSignInSuccess = {
-                    navController.navigate(HomeDest.route)
+                    navController.navigate(HomeDest.route) {
+                        popUpTo(WelcomeDest.route) {
+                            inclusive = true
+                        }
+                    }
                 })
         }
         composable(route = HomeDest.route) {
@@ -86,7 +94,7 @@ fun InjaazNavHost(
         composable(route = SettingsDest.route) {
             SettingsScreen(googleAuthUiClient = googleAuthUiClient, onLogoutSuccess = {
                 navController.navigate(WelcomeDest.route) {
-                    popUpTo(WelcomeDest.route) {
+                    popUpTo(startDestination) {
                         inclusive = true
                     }
                 }
@@ -101,8 +109,9 @@ fun InjaazNavHost(
 fun GreetingPreview() {
     InjaazTheme {
         InjaazNavHost(
-            rememberNavController(),
-            GoogleAuthUiClient(LocalContext.current)
+            onSplashTimeOut = {},
+            navController = rememberNavController(),
+            googleAuthUiClient = GoogleAuthUiClient(LocalContext.current)
         )
     }
 }
