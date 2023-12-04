@@ -27,12 +27,11 @@ import dev.awd.injaaz.presentation.HomeScreen
 import dev.awd.injaaz.presentation.auth.AuthUiClient
 import dev.awd.injaaz.presentation.auth.GoogleAuthUiClient
 import dev.awd.injaaz.presentation.auth.WelcomeScreen
-import dev.awd.injaaz.presentation.notes.NewNoteScreen
+import dev.awd.injaaz.presentation.notes.notesdetails.NoteDetailsRoute
 import dev.awd.injaaz.presentation.settings.SettingsScreen
 import dev.awd.injaaz.presentation.tasks.NewTaskRoute
 import dev.awd.injaaz.presentation.tasks.TaskDetailsRoute
 import dev.awd.injaaz.ui.theme.InjaazTheme
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -89,13 +88,13 @@ fun InjaazNavHost(
                     navController.navigate(HomeDest.route)
                 })
         }
-        composable(route = HomeDest.route) { backStackEntry ->
+        composable(route = HomeDest.route) {
             HomeScreen(userName = currentUser?.userName ?: "",
                 userAvatar = currentUser?.profilePhotoUrl ?: "",
                 onAddButtonClick = { screenIndex ->
                     when (screenIndex) {
                         0 -> navController.navigate(NewTaskDest.route)
-                        1 -> navController.navigate(NewNoteDest.route)
+                        1 -> navController.navigateToNoteDetails(-1)
                     }
 
                 },
@@ -103,7 +102,7 @@ fun InjaazNavHost(
                 onTaskItemClick = {
                     navController.navigateToTaskDetails(it)
                 },
-                onNoteItemClick = { navController.navigate(NewNoteDest.route) })
+                onNoteItemClick = { navController.navigateToNoteDetails(it) })
         }
         composable(route = NewTaskDest.route) {
             NewTaskRoute(onBackPressed = { navController.popBackStack() })
@@ -113,15 +112,17 @@ fun InjaazNavHost(
             arguments = TaskDetailsDest.arguments
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getInt(TaskDetailsDest.taskIdArg) ?: 0
-            Timber.d("Retrieved Task ID: $id")
 
             TaskDetailsRoute(
                 taskId = id,
                 onBackPressed = { navController.popBackStack() })
         }
 
-        composable(route = NewNoteDest.route) {
-            NewNoteScreen(onBackPressed = { navController.popBackStack() })
+        composable(
+            route = NewNoteDest.routeWithArgs,
+            arguments = NewNoteDest.arguments
+        ) {
+            NoteDetailsRoute { navController.popBackStack() }
         }
         composable(route = SettingsDest.route) {
             SettingsScreen(googleAuthUiClient = googleAuthUiClient, onLogoutSuccess = {
@@ -145,4 +146,8 @@ fun GreetingPreview() {
 
 fun NavController.navigateToTaskDetails(taskId: Int) {
     navigate("${TaskDetailsDest.route}/$taskId")
+}
+
+fun NavController.navigateToNoteDetails(noteId: Int) {
+    navigate("${NewNoteDest.route}/$noteId")
 }

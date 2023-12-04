@@ -60,4 +60,12 @@ object NotesDest : Destination {
 object NewNoteDest : Destination {
     override val route: String
         get() = "new-note-screen"
+    const val noteIdArg: String = "noteId"
+    val routeWithArgs: String = "${route}/{$noteIdArg}"
+    val arguments = listOf(
+        navArgument(noteIdArg) {
+            type = NavType.IntType
+            defaultValue = -1
+        }
+    )
 }

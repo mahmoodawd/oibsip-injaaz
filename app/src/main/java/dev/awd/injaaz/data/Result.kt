@@ -1,8 +1,11 @@
 package dev.awd.injaaz.data
 
 
-sealed class Result {
+sealed class Result<T>(
+    val data: T? = null,
+    val error: String? = null
+) {
 
-    class Success<T>(val data: T) : Result()
-    class Failure(val error: String) : Result()
+    class Success<T>(data: T) : Result<T>(data = data)
+    class Failure<T>(error: String) : Result<T>(error = error)
 }

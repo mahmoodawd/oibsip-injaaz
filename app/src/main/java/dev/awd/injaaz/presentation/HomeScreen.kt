@@ -40,7 +40,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import dev.awd.injaaz.R
-import dev.awd.injaaz.presentation.notes.NotesScreen
+import dev.awd.injaaz.presentation.notes.noteslist.NotesRoute
 import dev.awd.injaaz.presentation.tasks.TasksRoute
 import dev.awd.injaaz.ui.theme.InjaazTheme
 import dev.awd.injaaz.ui.theme.pilat_extended
@@ -127,7 +127,7 @@ fun HomeScreen(
                 onTaskClick = onTaskItemClick,
             )
 
-            1 -> NotesScreen(
+            1 -> NotesRoute(
                 modifier = modifier.padding(paddingValues),
                 onNoteClick = onNoteItemClick
             )
