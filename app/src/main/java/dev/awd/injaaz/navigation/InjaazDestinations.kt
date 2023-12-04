@@ -1,4 +1,4 @@
-package dev.awd.injaaz
+package dev.awd.injaaz.navigation
 
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
@@ -56,7 +56,7 @@ object NoteDetailsDest : Destination {
     override val route: String
         get() = "note-details-screen"
     const val noteIdArg: String = "noteId"
-    val routeWithArgs: String = "${route}/{$noteIdArg}"
+    val routeWithArgs: String = "$route/{$noteIdArg}"
     val arguments = listOf(
         navArgument(noteIdArg) {
             type = NavType.IntType

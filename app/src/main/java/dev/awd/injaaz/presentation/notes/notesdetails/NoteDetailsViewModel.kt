@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.awd.injaaz.NoteDetailsDest
+import dev.awd.injaaz.navigation.NoteDetailsDest
 import dev.awd.injaaz.data.Result
 import dev.awd.injaaz.domain.models.Note
 import dev.awd.injaaz.domain.repository.NotesRepository

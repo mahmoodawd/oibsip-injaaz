@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.awd.injaaz.TaskDetailsDest
+import dev.awd.injaaz.navigation.TaskDetailsDest
 import dev.awd.injaaz.data.Result
 import dev.awd.injaaz.domain.models.Priority
 import dev.awd.injaaz.domain.models.Task
