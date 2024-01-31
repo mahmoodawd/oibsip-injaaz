@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">إنجاز</string>
+    <string name="manage_your_tasks_with">إنجز مهامك مع</string>
+    <string name="continue_with_email">الإستمرار بالإيميل</string>
+    <string name="google">الإستمرار بجوجل</string>
+    <string name="back">للخلف</string>
+    <string name="note_details">تفاصيل الملاحظة</string>
+    <string name="note_title">عنوان الملاحظة</string>
+    <string name="some_content">أكتب شيئا…</string>
+    <string name="search_in_notes">البحث في الملاحظات</string>
+    <string name="all_notes">كل الملاحظات</string>
+    <string name="no_notes_yet">لا توجد ملاحظات محفوظة</string>
+    <string name="delete">حذف</string>
+    <string name="settings">الإعدادات</string>
+    <string name="username">إسم المستخدم</string>
+    <string name="email">الإيميل</string>
+    <string name="password">كلمة المرور</string>
+    <string name="language">لغة التطبيق</string>
+    <string name="logout">تسجيل الخروج</string>
+    <string name="task_details">تفاصيل المهمة</string>
+    <string name="task_title">عنوان المهمة</string>
+    <string name="ex_travel">السفر..مثلا</string>
+    <string name="describe_your_task">أكتب شيئا عن المهمة</string>
+    <string name="save">" حفظ"</string>
+    <string name="set_priority">حدد الأولوية</string>
+    <string name="time_date">الوقت والتاريخ</string>
+    <string name="confirm">تأكيد</string>
+    <string name="search_in_tasks">البحث في المهام</string>
+    <string name="no_tasks_yet">لا توجد مهام محفوظة</string>
+    <string name="all_tasks">كل المهام</string>
+    <string name="completed_tasks">المكتملة</string>
+    <string name="ongoing_tasks">جاري التنفيذ</string>
+    <string name="welcome_back">مرحبا بعودتك</string>
+    <string name="tasks">المهام</string>
+    <string name="notes">الملاحظات</string>
+    <string name="soon">قريبا</string>
+    <string name="priority_high">قصوى</string>
+    <string name="priority_moderate">متوسطة</string>
+    <string name="priority_low">عادية</string>
+    <string name="task_deleted">تم حذف المهمة</string>
+    <string name="note_deleted">تم حذف الملاحظة</string>
+    <string name="english">الإنجليزية</string>
+    <string name="arabic">العربية</string>
+</resources>

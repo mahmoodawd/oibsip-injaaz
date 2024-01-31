@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.awd.injaaz.R
 import dev.awd.injaaz.data.Result
 import dev.awd.injaaz.domain.models.Note
 import dev.awd.injaaz.domain.repository.NotesRepository
@@ -23,11 +24,11 @@ private const val NOTES_KEY = "notes"
 @HiltViewModel
 class NotesViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val notesRepository: NotesRepository
+    private val notesRepository: NotesRepository,
 ) : ViewModel() {
 
     private val notes = savedStateHandle.getStateFlow(NOTES_KEY, emptyList<Note>())
-    val notesEffect = MutableSharedFlow<String>()
+    val notesEffect = MutableSharedFlow<Int>()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val notesUiState: StateFlow<NotesUiState> =
@@ -61,9 +62,9 @@ class NotesViewModel @Inject constructor(
     fun deleteNote(note: Note) {
         viewModelScope.launch {
             notesRepository.deleteNote(note)
-            notesEffect.emit("Note Deleted")
+            notesEffect.emit(R.string.note_deleted)
             loadNotes()
         }
     }
-    
+
 }

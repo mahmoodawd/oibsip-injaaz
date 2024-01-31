@@ -110,8 +110,9 @@ fun WelcomeScreen(
         Text(
             text = buildAnnotatedString {
                 withStyle(style = SpanStyle(color = Color.White)) {
-                    append("Manage Your Tasks With ")
+                    append(stringResource(R.string.manage_your_tasks_with))
                 }
+                append("\b")
                 withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
                     append(stringResource(id = R.string.app_name))
                 }
@@ -130,7 +131,11 @@ fun WelcomeScreen(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(size = 6.dp)
         ) {
-            Text(text = "Continue With Email", color = Color.Black, fontWeight = FontWeight.Bold)
+            Text(
+                text = stringResource(R.string.continue_with_email),
+                color = Color.Black,
+                fontWeight = FontWeight.Bold
+            )
         }
         Button(
             onClick = { signInWithGoogle() },
@@ -145,11 +150,11 @@ fun WelcomeScreen(
             Row {
                 Icon(
                     painter = painterResource(id = R.drawable.google),
-                    contentDescription = "Google",
+                    contentDescription = stringResource(R.string.google),
 
                     modifier = Modifier.padding(end = 8.dp)
                 )
-                Text(text = "Google")
+                Text(text = stringResource(id = R.string.google))
             }
         }
     }

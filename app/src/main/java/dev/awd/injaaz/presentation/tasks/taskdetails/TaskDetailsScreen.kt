@@ -45,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -54,7 +55,6 @@ import dev.awd.injaaz.R
 import dev.awd.injaaz.domain.models.Priority
 import dev.awd.injaaz.presentation.components.ScreenHeader
 import dev.awd.injaaz.ui.theme.InjaazTheme
-import dev.awd.injaaz.utils.capitalize
 import dev.awd.injaaz.utils.extractDateFormatted
 import dev.awd.injaaz.utils.extractHourFormatted
 import java.util.Calendar
@@ -64,7 +64,7 @@ import java.util.Calendar
 fun TaskDetailsRoute(
     modifier: Modifier = Modifier,
     onBackPressed: () -> Unit,
-    viewModel: TaskDetailsViewModel = hiltViewModel()
+    viewModel: TaskDetailsViewModel = hiltViewModel(),
 ) {
 
     val uiState by viewModel.taskDetailsUiState.collectAsStateWithLifecycle()
@@ -110,17 +110,20 @@ fun TasksDetailsScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        ScreenHeader(screenTitle = "Task Details", onBackPressed = onBackPressed, actions = {
-            Icon(
-                painter = painterResource(id = R.drawable.ticksquare),
-                contentDescription = null,
-                tint = if (isCreateButtonEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
-                modifier = modifier.clickable(
-                    enabled = isCreateButtonEnabled,
-                    onClick = onCreateTask
+        ScreenHeader(
+            screenTitle = stringResource(R.string.task_details),
+            onBackPressed = onBackPressed,
+            actions = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ticksquare),
+                    contentDescription = null,
+                    tint = if (isCreateButtonEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                    modifier = modifier.clickable(
+                        enabled = isCreateButtonEnabled,
+                        onClick = onCreateTask
+                    )
                 )
-            )
-        })
+            })
         Spacer(modifier = Modifier.height(4.dp))
         when (uiState) {
             is TaskDetailsUiState.Error -> {}
@@ -129,14 +132,15 @@ fun TasksDetailsScreen(
 
                 CustomEditText(
                     text = uiState.taskTitle,
-                    label = "Task Title", hint = "Ex. Travel",
+                    label = stringResource(R.string.task_title),
+                    hint = stringResource(R.string.ex_travel),
                     onValueChanged = onTitleChanged
                 )
 
                 CustomEditText(
                     text = uiState.taskDetails,
-                    label = "Task Details",
-                    hint = "Describe Your task",
+                    label = stringResource(id = R.string.task_details),
+                    hint = stringResource(R.string.describe_your_task),
                     singleLine = false,
                     onValueChanged = onTaskDetailsChanged
                 )
@@ -158,7 +162,7 @@ fun TasksDetailsScreen(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
-                        text = "Save",
+                        text = stringResource(R.string.save),
                         color = Color.Black,
                         fontWeight = FontWeight.Bold,
                         modifier = modifier.padding(8.dp)
@@ -177,7 +181,7 @@ fun CustomEditText(
     hint: String = label,
     singleLine: Boolean = true,
     maxLines: Int = 5,
-    onValueChanged: (String) -> Unit
+    onValueChanged: (String) -> Unit,
 ) {
     Column(modifier = modifier) {
         Text(
@@ -216,11 +220,13 @@ fun PrioritySection(
     onPriorityChanged: (Priority) -> Unit,
 ) {
     val priorityList = listOf(
-        Priority.LOW, Priority.MODERATE, Priority.HIGH
+        Priority.LOW to R.string.priority_low,
+        Priority.MODERATE to R.string.priority_moderate,
+        Priority.HIGH to R.string.priority_high
     )
     Column(modifier = modifier) {
         Text(
-            text = "Set Priority",
+            text = stringResource(R.string.set_priority),
             color = MaterialTheme.colorScheme.secondary,
             style = MaterialTheme.typography.titleLarge
         )
@@ -230,11 +236,11 @@ fun PrioritySection(
         ) {
             priorityList.forEach { currentPriority ->
                 Text(
-                    text = currentPriority.name.lowercase().capitalize(),
+                    text = stringResource(id = currentPriority.second),
                     color = MaterialTheme.colorScheme.secondary
                 )
-                RadioButton(selected = priority == currentPriority, onClick = {
-                    onPriorityChanged(currentPriority)
+                RadioButton(selected = priority == currentPriority.first, onClick = {
+                    onPriorityChanged(currentPriority.first)
                 })
                 Spacer(modifier = Modifier.weight(1f))
             }
@@ -261,7 +267,7 @@ fun TimeDateSection(
 
     Column(modifier = modifier) {
         Text(
-            text = "Time & Date",
+            text = stringResource(R.string.time_date),
             color = MaterialTheme.colorScheme.secondary,
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(vertical = 4.dp)
@@ -319,7 +325,7 @@ fun PickerItem(
     text: String,
     @DrawableRes icon: Int,
     onPicked: () -> Unit,
-    content: @Composable (ColumnScope.() -> Unit)
+    content: @Composable (ColumnScope.() -> Unit),
 ) {
     var showPickerDialog by remember {
         mutableStateOf(false)
@@ -361,7 +367,7 @@ fun PickerItem(
                     showPickerDialog = false
                     onPicked()
                 }) {
-                    Text(text = "Confirm")
+                    Text(text = stringResource(R.string.confirm))
                 }
             },
             content = content

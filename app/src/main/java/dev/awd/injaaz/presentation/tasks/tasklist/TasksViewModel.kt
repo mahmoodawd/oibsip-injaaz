@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.awd.injaaz.R
 import dev.awd.injaaz.data.Result
 import dev.awd.injaaz.domain.models.Task
 import dev.awd.injaaz.domain.repository.TasksRepository
@@ -27,7 +28,7 @@ class TasksViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val tasks = savedStateHandle.getStateFlow(TASKS_KEY, emptyList<Task>())
-    val tasksEffect = MutableSharedFlow<String>()
+    val tasksEffect = MutableSharedFlow<Int>()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val tasksUiState: StateFlow<TasksUiState> =
@@ -63,7 +64,7 @@ class TasksViewModel @Inject constructor(
     fun deleteTask(task: Task) {
         viewModelScope.launch {
             tasksRepository.deleteTask(task)
-            tasksEffect.emit("Task Deleted")
+            tasksEffect.emit(R.string.task_deleted)
             loadTasks()
         }
     }

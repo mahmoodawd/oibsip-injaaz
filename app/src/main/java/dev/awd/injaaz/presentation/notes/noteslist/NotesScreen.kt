@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -99,10 +100,10 @@ fun NotesScreen(
 
             is NotesUiState.Notes -> {
 
-                InjaazSearchBar(hint = "Search Notes", onValueChanged = {}, onFilter = {})
+                InjaazSearchBar(hint = stringResource(R.string.search_in_notes), onValueChanged = {}, onFilter = {})
 
                 Text(
-                    text = "All Notes",
+                    text = stringResource(R.string.all_notes),
                     color = Color.White,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
@@ -131,7 +132,7 @@ fun NoNotesView(
             contentScale = ContentScale.Fit
         )
         Text(
-            text = "No Notes yet, Add your first one?".uppercase(),
+            text = stringResource(R.string.no_notes_yet).uppercase(),
             color = Color.White,
             letterSpacing = 4.sp,
             fontSize = 32.sp,
@@ -203,7 +204,7 @@ fun NoteItem(
 
             Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
                 Icon(
-                    imageVector = Icons.Default.Clear, contentDescription = "Delete",
+                    imageVector = Icons.Default.Clear, contentDescription = stringResource(R.string.delete),
                     modifier = Modifier
                         .minimumInteractiveComponentSize()
                         .clickable(onClick = onDeleteIconClick)

@@ -16,6 +16,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import dev.awd.injaaz.R
 import dev.awd.injaaz.presentation.HomeScreen
 import dev.awd.injaaz.presentation.auth.AuthUiClient
 import dev.awd.injaaz.presentation.auth.GoogleAuthUiClient
@@ -31,7 +32,7 @@ fun InjaazNavHost(
     navController: NavHostController,
     googleAuthUiClient: AuthUiClient,
     modifier: Modifier = Modifier,
-    onSplashTimeOut: () -> Unit
+    onSplashTimeOut: () -> Unit,
 ) {
     val context = LocalContext.current
     val currentUser = googleAuthUiClient.getSignedInUser()
@@ -56,7 +57,7 @@ fun InjaazNavHost(
             WelcomeScreen(modifier = modifier,
                 googleAuthUiClient = googleAuthUiClient,
                 onEmailButtonClick = {
-                    Toast.makeText(context, "SOON", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.soon, Toast.LENGTH_SHORT).show()
                 }, onSignInSuccess = {
                     navController.navigate(HomeDest.route) {
                         popUpTo(WelcomeDest.route) {

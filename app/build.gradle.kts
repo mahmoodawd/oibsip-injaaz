@@ -56,12 +56,16 @@ android {
 dependencies {
     val room_version = "2.6.1"
     val hilt_version = "2.48"
+    val appcompat_version = "1.6.1"
 
 
     implementation("androidx.core:core-ktx:1.12.0")
+
+    //Compose
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation("androidx.activity:activity-compose:1.8.1")
     implementation(platform("androidx.compose:compose-bom:2023.10.01"))
+    implementation("androidx.lifecycle:lifecycle-runtime-compose")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
@@ -87,6 +91,13 @@ dependencies {
     ksp("androidx.room:room-compiler:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
 
+    //DataStore
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    implementation ("androidx.appcompat:appcompat:$appcompat_version")
+    // For loading and tinting drawables on older versions of the platform
+//    implementation "androidx.appcompat:appcompat-resources:$appcompat_version"
+
     //Hilt
     implementation("com.google.dagger:hilt-android:$hilt_version")
     ksp("com.google.dagger:hilt-compiler:$hilt_version")
@@ -94,12 +105,7 @@ dependencies {
 
     //ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
-
-    //Splash Screen
-    implementation ("androidx.core:core-splashscreen:1.0.1")
 
     // Coil
     implementation("io.coil-kt:coil-compose:2.4.0")

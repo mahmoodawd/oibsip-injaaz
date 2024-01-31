@@ -1,4 +1,45 @@
 <resources>
     <string name="app_name">Injaaz</string>
-    <string name="web_client_id">924794835476-ha5gi61cjcsd6ejp26172t2d3km1g39f.apps.googleusercontent.com</string>
+    <string name="web_client_id" translatable="false">924794835476-ha5gi61cjcsd6ejp26172t2d3km1g39f.apps.googleusercontent.com</string>
+    <string name="manage_your_tasks_with">"Manage Your Tasks With "</string>
+    <string name="continue_with_email">Continue With Email</string>
+    <string name="google">Google</string>
+    <string name="back">Back</string>
+    <string name="note_details">Note Details</string>
+    <string name="note_title">Note Title</string>
+    <string name="some_content">Some Content…</string>
+    <string name="search_in_notes">Search Notes</string>
+    <string name="all_notes">All Notes</string>
+    <string name="no_notes_yet">No Notes yet, Add your first one?</string>
+    <string name="delete">Delete</string>
+    <string name="settings">Settings</string>
+    <string name="username">Username</string>
+    <string name="email">Email</string>
+    <string name="password">password</string>
+    <string name="language">Language</string>
+    <string name="logout">Logout</string>
+    <string name="task_details">Task Details</string>
+    <string name="task_title">Task Title</string>
+    <string name="ex_travel">Ex. Travel</string>
+    <string name="describe_your_task">Describe Your task</string>
+    <string name="save">Save</string>
+    <string name="set_priority">Set Priority</string>
+    <string name="time_date"><![CDATA[Time & Date]]></string>
+    <string name="confirm">Confirm</string>
+    <string name="search_in_tasks">Search tasks</string>
+    <string name="no_tasks_yet">No Tasks yet, Add your first one?</string>
+    <string name="all_tasks">All Tasks</string>
+    <string name="completed_tasks">Completed Tasks</string>
+    <string name="ongoing_tasks">Ongoing Tasks</string>
+    <string name="welcome_back">Welcome Back!</string>
+    <string name="tasks">Tasks</string>
+    <string name="notes">Notes</string>
+    <string name="soon">SOON</string>
+    <string name="priority_high">High</string>
+    <string name="priority_moderate">Moderate</string>
+    <string name="priority_low">Low</string>
+    <string name="task_deleted">Task Deleted</string>
+    <string name="note_deleted">Note Deleted</string>
+    <string name="english">English</string>
+    <string name="arabic">Arabic</string>
 </resources>

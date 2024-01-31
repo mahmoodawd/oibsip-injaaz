@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
@@ -73,7 +74,7 @@ fun NoteDetailsScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        ScreenHeader(screenTitle = "Note Details", onBackPressed = onBackPressed, actions = {
+        ScreenHeader(screenTitle = stringResource(R.string.note_details), onBackPressed = onBackPressed, actions = {
             Icon(
                 painter = painterResource(id = R.drawable.ticksquare),
                 contentDescription = null,
@@ -91,12 +92,12 @@ fun NoteDetailsScreen(
                 CustomEditText(
                     text = state.noteTitle,
                     fontSize = 24.sp,
-                    hint = "Note Title",
+                    hint = stringResource(R.string.note_title),
                     onValueChanged = onTitleChanged
                 )
                 CustomEditText(
                     text = state.noteContent,
-                    hint = "Some Content...",
+                    hint = stringResource(R.string.some_content),
                     singleLine = false,
                     onValueChanged = onContentChanged,
                     modifier = Modifier.weight(1f)

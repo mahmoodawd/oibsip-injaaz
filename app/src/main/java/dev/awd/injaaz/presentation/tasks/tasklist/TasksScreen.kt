@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
@@ -117,7 +118,7 @@ fun TasksScreen(
             )
 
             is TasksUiState.Tasks -> {
-                InjaazSearchBar(hint = "Search tasks", onValueChanged = {}, onFilter = {})
+                InjaazSearchBar(hint = stringResource(R.string.search_in_tasks), onValueChanged = {}, onFilter = {})
                 TasksView(
                     tasks = tasksUiState.tasks,
                     onTaskClick = onTaskClick,
@@ -142,7 +143,7 @@ fun NoTasksView(
             contentScale = ContentScale.Fit
         )
         Text(
-            text = "No Tasks yet, Add your first one?".uppercase(),
+            text = stringResource(R.string.no_tasks_yet).uppercase(),
             color = Color.White,
             letterSpacing = 4.sp,
             fontSize = 32.sp,
@@ -167,7 +168,7 @@ fun TasksView(
     LazyColumn(state = rememberLazyListState(), modifier = modifier) {
         stickyHeader {
             Text(
-                text = "All Tasks",
+                text = stringResource(R.string.all_tasks),
                 color = Color.White,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
@@ -315,7 +316,7 @@ fun CompletedTasksRow(
         modifier = modifier,
     ) {
         Text(
-            text = "Completed Tasks",
+            text = stringResource(R.string.completed_tasks),
             color = Color.White,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
@@ -368,7 +369,7 @@ fun OngoingTasksColumn(
     LazyColumn(modifier = modifier) {
         stickyHeader {
             Text(
-                text = "Ongoing Tasks",
+                text = stringResource(R.string.ongoing_tasks),
                 color = Color.White,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,

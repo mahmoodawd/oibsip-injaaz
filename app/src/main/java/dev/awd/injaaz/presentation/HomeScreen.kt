@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -107,7 +108,7 @@ fun HomeScreen(
                             unselectedTextColor = MaterialTheme.colorScheme.onSurface,
                             indicatorColor = Color(0xFF263238)
                         ),
-                        label = { Text(text = item.first) },
+                        label = { Text(text = stringResource(id = item.first)) },
                         onClick = { selectedItemIndex = index },
                         icon = {
                             Icon(
@@ -139,10 +140,10 @@ fun HomeScreen(
 @Composable
 fun InjaazTopBar(
     modifier: Modifier = Modifier,
-    title: String = "Welcome Back!",
+    title: String = stringResource(R.string.welcome_back),
     subtitle: String,
     icon: String,
-    onIconClick: () -> Unit
+    onIconClick: () -> Unit,
 ) {
     TopAppBar(modifier = modifier,
         colors = TopAppBarDefaults.largeTopAppBarColors(
@@ -209,6 +210,6 @@ private fun HomePreview() {
 }
 
 private val bottomNavigationItems = listOf(
-    "Tasks" to R.drawable.tasks,
-    "Notes" to R.drawable.edit
+    R.string.tasks to R.drawable.tasks,
+    R.string.notes to R.drawable.edit
 )
