@@ -1,53 +1,34 @@
 package dev.awd.injaaz.navigation
 
-import android.content.res.Configuration
-import android.widget.Toast
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import dev.awd.injaaz.R
+import dev.awd.injaaz.domain.models.User
+import dev.awd.injaaz.presentation.BottomBarScreen
 import dev.awd.injaaz.presentation.HomeScreen
 import dev.awd.injaaz.presentation.auth.AuthUiClient
-import dev.awd.injaaz.presentation.auth.GoogleAuthUiClient
 import dev.awd.injaaz.presentation.auth.WelcomeScreen
 import dev.awd.injaaz.presentation.notes.notesdetails.NoteDetailsRoute
 import dev.awd.injaaz.presentation.settings.SettingsScreen
-import dev.awd.injaaz.presentation.tasks.taskdetails.TaskDetailsRoute
-import dev.awd.injaaz.ui.theme.InjaazTheme
-import kotlinx.coroutines.delay
+import dev.awd.injaaz.presentation.tasks.taskdetails.TaskDetailsScreen
+import kotlinx.coroutines.launch
+
+private const val NEW_ITEM_ID = -1
 
 @Composable
 fun InjaazNavHost(
-    navController: NavHostController,
-    googleAuthUiClient: AuthUiClient,
     modifier: Modifier = Modifier,
-    onSplashTimeOut: () -> Unit,
+    navController: NavHostController,
+    startDestination: String = WelcomeDest.route,
+    googleAuthUiClient: AuthUiClient,
+    currentUser: User?,
 ) {
-    val context = LocalContext.current
-    val currentUser = googleAuthUiClient.getSignedInUser()
-    var startDestination by remember {
-        mutableStateOf(WelcomeDest.route)
-    }
-
-    //Auto Login
-    LaunchedEffect(key1 = Unit) {
-        if (currentUser != null) {
-            startDestination = HomeDest.route
-        }
-        delay(1000L)
-        onSplashTimeOut()
-    }
+    val lifecycleScope = LocalLifecycleOwner.current.lifecycleScope
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -56,9 +37,7 @@ fun InjaazNavHost(
         composable(route = WelcomeDest.route) {
             WelcomeScreen(modifier = modifier,
                 googleAuthUiClient = googleAuthUiClient,
-                onEmailButtonClick = {
-                    Toast.makeText(context, R.string.soon, Toast.LENGTH_SHORT).show()
-                }, onSignInSuccess = {
+                onSignInSuccess = {
                     navController.navigate(HomeDest.route) {
                         popUpTo(WelcomeDest.route) {
                             inclusive = true
@@ -67,24 +46,25 @@ fun InjaazNavHost(
                 })
         }
         composable(route = HomeDest.route) {
-            HomeScreen(userName = currentUser?.userName ?: "",
+            HomeScreen(
+                userName = currentUser?.userName ?: "",
                 userAvatar = currentUser?.profilePhotoUrl ?: "",
                 onAddButtonClick = { screenIndex ->
                     when (screenIndex) {
-                        0 -> navController.navigateToTaskDetails(-1)
-                        1 -> navController.navigateToNoteDetails(-1)
+                        BottomBarScreen.Tasks -> navController.navigateToTaskDetails()
+                        BottomBarScreen.Notes -> navController.navigateToNoteDetails()
                     }
-
                 },
                 onUserAvatarClick = { navController.navigate(SettingsDest.route) },
-                onTaskItemClick = { navController.navigateToTaskDetails(it) },
-                onNoteItemClick = { navController.navigateToNoteDetails(it) })
+                onTaskLongClick = navController::navigateToTaskDetails,
+                onNoteItemClick = navController::navigateToNoteDetails,
+            )
         }
 
         composable(
             route = TaskDetailsDest.routeWithArgs,
             arguments = TaskDetailsDest.arguments,
-            content = { TaskDetailsRoute(onBackPressed = { navController.popBackStack() }) }
+            content = { TaskDetailsScreen(onBackPressed = { navController.popBackStack() }) }
         )
 
         composable(
@@ -93,7 +73,10 @@ fun InjaazNavHost(
             content = { NoteDetailsRoute { navController.popBackStack() } }
         )
         composable(route = SettingsDest.route) {
-            SettingsScreen(googleAuthUiClient = googleAuthUiClient, onLogoutSuccess = {
+            SettingsScreen(user = currentUser, onLogout = {
+                lifecycleScope.launch {
+                    googleAuthUiClient.signOut()
+                }
                 navController.navigate(WelcomeDest.route) {
                     popUpTo(startDestination) {
                         inclusive = true
@@ -105,22 +88,10 @@ fun InjaazNavHost(
     }
 }
 
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
-@Composable
-fun GreetingPreview() {
-    InjaazTheme {
-        InjaazNavHost(
-            onSplashTimeOut = {},
-            navController = rememberNavController(),
-            googleAuthUiClient = GoogleAuthUiClient(LocalContext.current)
-        )
-    }
-}
-
-fun NavController.navigateToTaskDetails(taskId: Int) {
+fun NavController.navigateToTaskDetails(taskId: Int = NEW_ITEM_ID) {
     navigate("${TaskDetailsDest.route}/$taskId")
 }
 
-fun NavController.navigateToNoteDetails(noteId: Int) {
+fun NavController.navigateToNoteDetails(noteId: Int = NEW_ITEM_ID) {
     navigate("${NoteDetailsDest.route}/$noteId")
 }

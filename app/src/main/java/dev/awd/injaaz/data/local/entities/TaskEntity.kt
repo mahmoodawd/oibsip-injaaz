@@ -10,7 +10,7 @@ data class TaskEntity(
     val userId: String,
     val title: String,
     val date: Long,
-    val time: Int,
+    val time: Long,
     val description: String,
     val isCompleted: Boolean = false,
     val priority: String

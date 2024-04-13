@@ -9,7 +9,7 @@ sealed interface TaskDetailsUiState {
         val taskTitle: String = "",
         val taskDetails: String = "",
         val taskDate: Long = 0L,
-        val taskTime: Int = 0,
+        val taskTime: Long = 0,
         val taskPriority: Priority = Priority.MODERATE,
     ) : TaskDetailsUiState
 

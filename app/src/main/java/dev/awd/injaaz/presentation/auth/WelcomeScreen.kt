@@ -1,6 +1,7 @@
 package dev.awd.injaaz.presentation.auth
 
 import android.app.Activity.RESULT_OK
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -48,18 +49,20 @@ import dev.awd.injaaz.ui.theme.pilat_extended
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
+/**
+ * Stateful screen for user authentication
+ */
 @Composable
 fun WelcomeScreen(
     modifier: Modifier = Modifier,
     googleAuthUiClient: AuthUiClient,
-    onEmailButtonClick: () -> Unit,
     onSignInSuccess: () -> Unit,
 ) {
     val viewModel = viewModel<AuthViewModel>()
     val authUiState by viewModel.uiState.collectAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
     val lifecycleScope = lifecycleOwner.lifecycleScope
-
+    val context = LocalContext.current
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult(),
@@ -80,6 +83,7 @@ fun WelcomeScreen(
             onSignInSuccess()
             viewModel.resetState()
         }
+
     }
 
     fun signInWithGoogle() {
@@ -92,6 +96,26 @@ fun WelcomeScreen(
             )
         }
     }
+
+    WelcomeScreen(
+        onEmailButtonClick = {
+            Toast.makeText(context, R.string.soon, Toast.LENGTH_SHORT).show()
+        },
+        onGoogleButtonClick = { signInWithGoogle() },
+        modifier = modifier
+    )
+}
+
+/**
+ * Stateless screen for user authentication
+ */
+@Composable
+fun WelcomeScreen(
+    modifier: Modifier = Modifier,
+    onEmailButtonClick: () -> Unit,
+    onGoogleButtonClick: () -> Unit,
+) {
+
     Column(
         modifier = modifier
             .verticalScroll(rememberScrollState())
@@ -138,7 +162,7 @@ fun WelcomeScreen(
             )
         }
         Button(
-            onClick = { signInWithGoogle() },
+            onClick = onGoogleButtonClick,
             border = BorderStroke(2.dp, Color.White),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent,
@@ -165,11 +189,9 @@ fun WelcomeScreen(
 @Composable
 private fun WelcomePreview() {
     InjaazTheme {
-        val context = LocalContext.current
         WelcomeScreen(
             onEmailButtonClick = {},
-            onSignInSuccess = {},
-            googleAuthUiClient = GoogleAuthUiClient(context)
+            onGoogleButtonClick = {}
         )
     }
 }

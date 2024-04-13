@@ -1,5 +1,8 @@
 package dev.awd.injaaz.domain.models
 
+import androidx.annotation.StringRes
+import dev.awd.injaaz.R
+
 
 data class Task(
     val id: Int = 0,
@@ -7,10 +10,10 @@ data class Task(
     var details: String,
     var isCompleted: Boolean = false,
     var date: Long,
-    var time: Int,
+    var time: Long,
     var priority: Priority,
 )
 
-enum class Priority {
-    HIGH, MODERATE, LOW
+enum class Priority(@StringRes val title: Int) {
+    HIGH(R.string.priority_high), MODERATE(R.string.priority_moderate), LOW(R.string.priority_low)
 }

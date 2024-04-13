@@ -1,10 +1,13 @@
 package dev.awd.injaaz.presentation
 
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -16,16 +19,13 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -41,25 +41,80 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import dev.awd.injaaz.R
-import dev.awd.injaaz.presentation.notes.noteslist.NotesRoute
-import dev.awd.injaaz.presentation.tasks.tasklist.TasksRoute
+import dev.awd.injaaz.presentation.components.InjaazBottomBar
+import dev.awd.injaaz.presentation.notes.noteslist.NotesScreen
+import dev.awd.injaaz.presentation.tasks.tasklist.TasksScreen
 import dev.awd.injaaz.ui.theme.InjaazTheme
 import dev.awd.injaaz.ui.theme.pilat_extended
 
+
+/**
+ * Stateful Screen for Home Content
+ */
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
     userName: String,
     userAvatar: String,
-    onAddButtonClick: (Int) -> Unit,
+    onAddButtonClick: (currentScreen: BottomBarScreen) -> Unit,
     onUserAvatarClick: () -> Unit,
-    onTaskItemClick: (Int) -> Unit,
-    onNoteItemClick: (Int) -> Unit,
-    ) {
-
-    var selectedItemIndex by rememberSaveable {
-        mutableIntStateOf(0)
+    onTaskLongClick: (taskId: Int) -> Unit,
+    onNoteItemClick: (noteId: Int) -> Unit,
+) {
+    val bottomNavigationItems = BottomBarScreen.entries
+    var currentScreen by rememberSaveable {
+        mutableStateOf(BottomBarScreen.Tasks)
     }
+
+    @Composable
+    fun ScreenBody(): @Composable (PaddingValues) -> Unit =
+        when (currentScreen) {
+            BottomBarScreen.Tasks -> { paddingValues ->
+                TasksScreen(
+                    modifier.padding(paddingValues),
+                    onTaskLongClick = onTaskLongClick,
+                )
+            }
+
+            BottomBarScreen.Notes -> { paddingValues ->
+                NotesScreen(
+                    modifier.padding(paddingValues),
+                    onNoteClick = onNoteItemClick,
+                )
+            }
+        }
+
+
+
+    HomeScreen(
+        userName = userName,
+        userAvatar = userAvatar,
+        onAddButtonClick = onAddButtonClick,
+        onUserAvatarClick = onUserAvatarClick,
+        bottomNavigationItems = bottomNavigationItems,
+        currentScreen = currentScreen,
+        currentScreenBody = ScreenBody(),
+        onScreenChange = { screen -> currentScreen = screen }
+    )
+}
+
+/**
+ * Stateless Screen for Home Content
+ */
+@Composable
+fun HomeScreen(
+    modifier: Modifier = Modifier,
+    userName: String,
+    userAvatar: String,
+    onAddButtonClick: (currentScreen: BottomBarScreen) -> Unit,
+    onUserAvatarClick: () -> Unit,
+    bottomNavigationItems: List<BottomBarScreen>,
+    currentScreen: BottomBarScreen,
+    currentScreenBody: @Composable (PaddingValues) -> Unit,
+    onScreenChange: (BottomBarScreen) -> Unit,
+) {
+
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -71,69 +126,24 @@ fun HomeScreen(
         },
         floatingActionButtonPosition = FabPosition.Center,
         floatingActionButton = {
-            FloatingActionButton(
-                modifier = Modifier
-                    .offset(y = 48.dp)
-//                    .background(MaterialTheme.colorScheme.primary)
-                    .border(
-                        width = 8.dp,
-                        color = MaterialTheme.colorScheme.background,
-                        shape = CircleShape
-                    )
-                    .clip(CircleShape)
-                    .shadow(shape = CircleShape, elevation = 8.dp, clip = true)
-                    .padding(4.dp),
-                shape = CircleShape,
-                elevation = FloatingActionButtonDefaults.elevation(
-                    defaultElevation = 16.dp
-                ),
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.Black,
-                onClick = { onAddButtonClick(selectedItemIndex) }) {
-                Icon(painter = painterResource(id = R.drawable.add), contentDescription = null)
-            }
+            AddNewFab(
+                onClick = { onAddButtonClick(currentScreen) },
+                label = stringResource(
+                    id = when (currentScreen) {
+                        BottomBarScreen.Tasks -> R.string.new_task
+                        BottomBarScreen.Notes -> R.string.new_note
+                    }
+                )
+            )
         },
         bottomBar = {
-            NavigationBar(
-                containerColor = Color(0xFF263238),
-                tonalElevation = 4.dp
-            ) {
-                bottomNavigationItems.forEachIndexed { index, item ->
-                    NavigationBarItem(
-                        selected = selectedItemIndex == index,
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            selectedTextColor = MaterialTheme.colorScheme.primary,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurface,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurface,
-                            indicatorColor = Color(0xFF263238)
-                        ),
-                        label = { Text(text = stringResource(id = item.first)) },
-                        onClick = { selectedItemIndex = index },
-                        icon = {
-                            Icon(
-                                painter = painterResource(id = item.second),
-                                contentDescription = null
-                            )
-                        })
-                }
-
-            }
-        }
-
-    ) { paddingValues ->
-        when (selectedItemIndex) {
-            0 -> TasksRoute(
-                modifier = modifier.padding(paddingValues),
-                onTaskClick = onTaskItemClick,
+            InjaazBottomBar(
+                currentScreen = currentScreen,
+                screens = bottomNavigationItems,
+                onTabSelected = onScreenChange
             )
-
-            1 -> NotesRoute(
-                modifier = modifier.padding(paddingValues),
-                onNoteClick = onNoteItemClick
-            )
-        }
-    }
+        }, content = currentScreenBody
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -195,6 +205,39 @@ fun InjaazTopBar(
 
 }
 
+
+@Composable
+fun AddNewFab(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+    label: String,
+) {
+    FloatingActionButton(
+        modifier = modifier
+            .offset(y = 48.dp)
+            .border(
+                width = 8.dp,
+                color = MaterialTheme.colorScheme.background,
+                shape = CircleShape
+            )
+            .clip(CircleShape)
+            .shadow(shape = CircleShape, elevation = 8.dp, clip = true)
+            .padding(4.dp),
+        shape = CircleShape,
+        elevation = FloatingActionButtonDefaults.elevation(
+            defaultElevation = 16.dp
+        ),
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = Color.Black,
+        onClick = onClick
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.add),
+            contentDescription = label
+        )
+    }
+}
+
 @Preview
 @Composable
 private fun HomePreview() {
@@ -204,12 +247,23 @@ private fun HomePreview() {
             userAvatar = "",
             onUserAvatarClick = {},
             onAddButtonClick = {},
-            onTaskItemClick = {},
+            onTaskLongClick = {},
             onNoteItemClick = {})
     }
 }
 
-private val bottomNavigationItems = listOf(
-    R.string.tasks to R.drawable.tasks,
-    R.string.notes to R.drawable.edit
-)
+
+enum class BottomBarScreen(
+    @StringRes val title: Int,
+    @DrawableRes val icon: Int,
+) {
+    Tasks(
+        title = R.string.tasks,
+        icon = R.drawable.tasks,
+    ),
+
+    Notes(
+        title = R.string.notes,
+        icon = R.drawable.edit
+    )
+}

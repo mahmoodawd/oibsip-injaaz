@@ -20,11 +20,11 @@
     <string name="logout">Logout</string>
     <string name="task_details">Task Details</string>
     <string name="task_title">Task Title</string>
-    <string name="ex_travel">Ex. Travel</string>
+    <string name="task_title_hint">What you would like to do?</string>
     <string name="describe_your_task">Describe Your task</string>
     <string name="save">Save</string>
     <string name="set_priority">Set Priority</string>
-    <string name="time_date"><![CDATA[Time & Date]]></string>
+    <string name="date_time"><![CDATA[Date & Time]]></string>
     <string name="confirm">Confirm</string>
     <string name="search_in_tasks">Search tasks</string>
     <string name="no_tasks_yet">No Tasks yet, Add your first one?</string>
@@ -42,4 +42,12 @@
     <string name="note_deleted">Note Deleted</string>
     <string name="english">English</string>
     <string name="arabic">Arabic</string>
+    <string name="new_task">Create New Task</string>
+    <string name="new_note">Create New Note</string>
+    <string name="cancel">Cancel</string>
+    <string name="archive">Archive</string>
+    <string name="check">Check</string>
+    <string name="uncheck">Uncheck</string>
+    <string name="checked">Checked</string>
+    <string name="unchecked">Unchecked</string>
 </resources>

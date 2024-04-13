@@ -23,7 +23,7 @@ fun Task.toTaskEntity(userId: String) =
         title = title,
         description = details,
         date = date,
-        time  = time,
+        time = time,
         isCompleted = isCompleted,
         priority = priority.name
     )

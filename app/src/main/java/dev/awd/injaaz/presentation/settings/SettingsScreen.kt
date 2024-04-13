@@ -2,7 +2,6 @@ package dev.awd.injaaz.presentation.settings
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -35,39 +34,28 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.os.LocaleListCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import coil.compose.SubcomposeAsyncImage
 import dev.awd.injaaz.R
-import dev.awd.injaaz.presentation.auth.AuthUiClient
-import dev.awd.injaaz.presentation.auth.GoogleAuthUiClient
+import dev.awd.injaaz.domain.models.User
 import dev.awd.injaaz.presentation.components.ScreenHeader
 import dev.awd.injaaz.ui.theme.InjaazTheme
-import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,
-    googleAuthUiClient: AuthUiClient,
-    onLogoutSuccess: () -> Unit,
+    user: User?,
+    onLogout: () -> Unit,
     onBackPressed: () -> Unit,
 ) {
-
-    val user = googleAuthUiClient.getSignedInUser()
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val lifecycleScope = lifecycleOwner.lifecycleScope
 
     var showSheet by remember {
         mutableStateOf(false)
@@ -75,12 +63,6 @@ fun SettingsScreen(
     val viewModel: SettingsViewModel = hiltViewModel()
     val currentLanguage by viewModel.currentLanguage.collectAsStateWithLifecycle()
 
-    fun logOut() {
-        lifecycleScope.launch {
-            googleAuthUiClient.signOut()
-            onLogoutSuccess()
-        }
-    }
 
     if (showSheet) {
         LanguageBottomSheet(
@@ -153,7 +135,7 @@ fun SettingsScreen(
         }
         Spacer(modifier = Modifier.weight(1f))
         Button(
-            onClick = { logOut() },
+            onClick = onLogout,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(size = 6.dp)
         ) {
@@ -301,9 +283,7 @@ fun LanguagesList(
 private fun SettingsPreview() {
 
     InjaazTheme {
-        SettingsScreen(
-            googleAuthUiClient = GoogleAuthUiClient(LocalContext.current),
-            onLogoutSuccess = {}) {}
+        SettingsScreen(user = User("", "User", "user@email.com", ""), onLogout = {}) {}
     }
 }
 

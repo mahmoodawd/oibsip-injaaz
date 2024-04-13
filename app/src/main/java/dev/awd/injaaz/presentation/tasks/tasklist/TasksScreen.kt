@@ -7,7 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -51,6 +51,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
@@ -63,15 +66,18 @@ import dev.awd.injaaz.domain.models.Priority
 import dev.awd.injaaz.domain.models.Task
 import dev.awd.injaaz.presentation.components.InjaazSearchBar
 import dev.awd.injaaz.ui.theme.InjaazTheme
-import dev.awd.injaaz.utils.extractDateFormatted
+import dev.awd.injaaz.utils.formatDate
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
+/**
+ * Stateful Screen for Tasks List
+ */
 @Composable
-fun TasksRoute(
+fun TasksScreen(
     modifier: Modifier = Modifier,
     viewModel: TasksViewModel = hiltViewModel(),
-    onTaskClick: (Int) -> Unit
+    onTaskLongClick: (Int) -> Unit,
 ) {
 
     val tasksUiState by viewModel.tasksUiState.collectAsStateWithLifecycle()
@@ -87,18 +93,21 @@ fun TasksRoute(
     }
     TasksScreen(
         tasksUiState = tasksUiState,
-        onTaskClick = onTaskClick,
+        onTaskLongClick = onTaskLongClick,
         onTaskDismissed = viewModel::deleteTask,
         onTaskChecked = viewModel::updateTask,
         modifier = modifier
     )
 }
 
+/**
+ * Stateful Screen for Tasks List
+ */
 @Composable
 fun TasksScreen(
     modifier: Modifier = Modifier,
     tasksUiState: TasksUiState,
-    onTaskClick: (Int) -> Unit,
+    onTaskLongClick: (Int) -> Unit,
     onTaskDismissed: (Task) -> Unit,
     onTaskChecked: (Task, Boolean) -> Unit,
 ) {
@@ -118,10 +127,13 @@ fun TasksScreen(
             )
 
             is TasksUiState.Tasks -> {
-                InjaazSearchBar(hint = stringResource(R.string.search_in_tasks), onValueChanged = {}, onFilter = {})
+                InjaazSearchBar(
+                    hint = stringResource(R.string.search_in_tasks),
+                    onValueChanged = {},
+                    onFilter = {})
                 TasksView(
                     tasks = tasksUiState.tasks,
-                    onTaskClick = onTaskClick,
+                    onTaskLongClick = onTaskLongClick,
                     onTaskDismissed = onTaskDismissed,
                     onTaskChecked = onTaskChecked
                 )
@@ -134,7 +146,7 @@ fun TasksScreen(
 
 @Composable
 fun NoTasksView(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(verticalArrangement = Arrangement.Center, modifier = modifier.padding(16.dp)) {
         Image(
@@ -161,7 +173,7 @@ fun NoTasksView(
 fun TasksView(
     modifier: Modifier = Modifier,
     tasks: List<Task>,
-    onTaskClick: (Int) -> Unit,
+    onTaskLongClick: (Int) -> Unit,
     onTaskDismissed: (Task) -> Unit,
     onTaskChecked: (Task, Boolean) -> Unit,
 ) {
@@ -182,7 +194,7 @@ fun TasksView(
             SwipableTaskItem(
                 title = task.title,
                 isCompleted = isTaskCompleted,
-                onTaskClick = { onTaskClick(task.id) },
+                onTaskLongClick = { onTaskLongClick(task.id) },
                 onTaskDismissed = { onTaskDismissed(task) },
                 onTaskChecked = { isChecked ->
                     isTaskCompleted = isChecked
@@ -199,9 +211,9 @@ fun SwipableTaskItem(
     modifier: Modifier = Modifier,
     title: String,
     isCompleted: Boolean,
-    onTaskClick: () -> Unit,
+    onTaskLongClick: () -> Unit,
     onTaskDismissed: () -> Unit,
-    onTaskChecked: (Boolean) -> Unit
+    onTaskChecked: (Boolean) -> Unit,
 ) {
     var dismiss by remember { mutableStateOf(false) }
 
@@ -231,8 +243,8 @@ fun SwipableTaskItem(
                 TaskItem(
                     title = title,
                     isCompleted = isCompleted,
-                    onTaskClick = onTaskClick,
-                    onTaskChecked = onTaskChecked
+                    onLongClick = onTaskLongClick,
+                    onChecked = onTaskChecked
                 )
             })
     }
@@ -243,9 +255,9 @@ fun SwipableTaskItem(
 @Composable
 fun DismissBackground(dismissDirection: DismissDirection = DismissDirection.StartToEnd) {
     val color = when (dismissDirection) {
-        DismissDirection.StartToEnd -> Color(0xFFFF1744)
-        DismissDirection.EndToStart -> Color(0xFF1DE9B6)
-        null -> Color.Transparent
+        DismissDirection.StartToEnd -> MaterialTheme.colorScheme.error
+        DismissDirection.EndToStart -> MaterialTheme.colorScheme.primary
+        else -> Color.Transparent
     }
 
     Row(
@@ -258,28 +270,41 @@ fun DismissBackground(dismissDirection: DismissDirection = DismissDirection.Star
     ) {
         if (dismissDirection == DismissDirection.StartToEnd) Icon(
             imageVector = Icons.Default.Delete,
-            contentDescription = "delete"
+            contentDescription = stringResource(id = R.string.delete)
         )
         Spacer(modifier = Modifier)
         if (dismissDirection == DismissDirection.EndToStart) Icon(
             imageVector = Icons.Default.ExitToApp,
-            contentDescription = "Archive"
+            contentDescription = stringResource(R.string.archive)
         )
     }
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TaskItem(
     modifier: Modifier = Modifier,
     title: String,
     isCompleted: Boolean,
-    onTaskClick: () -> Unit,
-    onTaskChecked: (Boolean) -> Unit
+    onLongClick: () -> Unit,
+    onChecked: (Boolean) -> Unit,
 ) {
+    val taskClickLabel =
+        stringResource(id = if (isCompleted) R.string.check else R.string.uncheck) + title
+    val taskStateDescription =
+        stringResource(id = if (isCompleted) R.string.checked else R.string.unchecked)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
+            .semantics { stateDescription = taskStateDescription }
+            .combinedClickable(
+                role = Role.Checkbox,
+                onLongClick = { onLongClick() },
+                onClickLabel = taskClickLabel
+            ) {
+                onChecked(!isCompleted)
+            }
             .padding(vertical = 6.dp)
             .background(MaterialTheme.colorScheme.onBackground)
             .fillMaxWidth()
@@ -288,18 +313,17 @@ fun TaskItem(
             text = title,
             textDecoration = if (isCompleted) TextDecoration.LineThrough else null,
             color = Color.White,
-            modifier = Modifier
-                .clickable { onTaskClick() }
-                .padding(horizontal = 8.dp)
+            modifier = Modifier.padding(horizontal = 8.dp)
         )
-        Spacer(modifier = Modifier
-            .weight(1f)
-            .clickable { onTaskClick() })
+        Spacer(
+            modifier = Modifier
+                .weight(1f)
+        )
         Checkbox(
             checked = isCompleted, colors = CheckboxDefaults.colors(
                 checkmarkColor = Color.Black,
                 uncheckedColor = Color.Black
-            ), onCheckedChange = onTaskChecked,
+            ), onCheckedChange = null,
             modifier = Modifier
                 .padding(8.dp)
                 .background(MaterialTheme.colorScheme.primary)
@@ -310,7 +334,7 @@ fun TaskItem(
 @Composable
 fun CompletedTasksRow(
     modifier: Modifier = Modifier,
-    tasks: List<Task>
+    tasks: List<Task>,
 ) {
     Column(
         modifier = modifier,
@@ -325,7 +349,7 @@ fun CompletedTasksRow(
         )
         LazyRow(modifier = Modifier.align(CenterHorizontally)) {
             items(tasks) { task ->
-                TasksRowItem(title = task.title, date = extractDateFormatted(task.date))
+                TasksRowItem(title = task.title, date = formatDate(task.date))
             }
         }
     }
@@ -336,7 +360,7 @@ fun CompletedTasksRow(
 fun TasksRowItem(
     modifier: Modifier = Modifier,
     title: String,
-    date: String
+    date: String,
 ) {
     Column(
         modifier = modifier
@@ -364,7 +388,7 @@ fun TasksRowItem(
 @Composable
 fun OngoingTasksColumn(
     modifier: Modifier = Modifier,
-    tasks: List<Task>
+    tasks: List<Task>,
 ) {
     LazyColumn(modifier = modifier) {
         stickyHeader {
@@ -387,7 +411,7 @@ fun OngoingTasksColumn(
 fun OngoingTaskItem(
     modifier: Modifier = Modifier,
     title: String,
-    date: Long
+    date: Long,
 ) {
 }
 
@@ -435,7 +459,7 @@ private fun TasksPreview() {
                     ),
                 )
             ),
-            onTaskClick = {},
+            onTaskLongClick = {},
             onTaskDismissed = {},
             onTaskChecked = { _, _ -> }
         )
@@ -450,7 +474,7 @@ private fun NoTasksPreview() {
     InjaazTheme {
         TasksScreen(
             tasksUiState = TasksUiState.Empty,
-            onTaskClick = {},
+            onTaskLongClick = {},
             onTaskDismissed = {},
             onTaskChecked = { _, _ -> })
     }

@@ -53,11 +53,14 @@ import dev.awd.injaaz.presentation.components.InjaazSearchBar
 import dev.awd.injaaz.ui.theme.InjaazTheme
 import kotlinx.coroutines.flow.collectLatest
 
+/**
+ * Stateful Screen for Notes Content
+ */
 @Composable
-fun NotesRoute(
+fun NotesScreen(
     modifier: Modifier = Modifier,
     onNoteClick: (Int) -> Unit,
-    viewModel: NotesViewModel = hiltViewModel()
+    viewModel: NotesViewModel = hiltViewModel(),
 ) {
 
     val notesUiState by viewModel.notesUiState.collectAsStateWithLifecycle()
@@ -81,12 +84,15 @@ fun NotesRoute(
     )
 }
 
+/**
+ * Stateless Screen for NotesContent
+ */
 @Composable
 fun NotesScreen(
     modifier: Modifier = Modifier,
     uiState: NotesUiState,
     onNoteClick: (Int) -> Unit,
-    onDeleteIconClick: (Note) -> Unit
+    onDeleteIconClick: (Note) -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -100,7 +106,10 @@ fun NotesScreen(
 
             is NotesUiState.Notes -> {
 
-                InjaazSearchBar(hint = stringResource(R.string.search_in_notes), onValueChanged = {}, onFilter = {})
+                InjaazSearchBar(
+                    hint = stringResource(R.string.search_in_notes),
+                    onValueChanged = {},
+                    onFilter = {})
 
                 Text(
                     text = stringResource(R.string.all_notes),
@@ -123,7 +132,7 @@ fun NotesScreen(
 
 @Composable
 fun NoNotesView(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(verticalArrangement = Arrangement.Center, modifier = modifier.padding(16.dp)) {
         Image(
@@ -150,27 +159,27 @@ fun NotesView(
     modifier: Modifier = Modifier,
     notes: List<Note>,
     onNoteClick: (Int) -> Unit,
-    onDeleteIconClick: (Note) -> Unit
+    onDeleteIconClick: (Note) -> Unit,
 ) {
     LazyVerticalStaggeredGrid(
         modifier = modifier,
         columns = StaggeredGridCells.Adaptive(150.dp),
         state = rememberLazyStaggeredGridState()
     ) {
-        items(notes, key = { it.id }) {
+        items(notes, key = { it.id }) { note ->
             var isFrameVisible by remember {
                 mutableStateOf(false)
             }
             NoteItem(
-                title = it.title,
-                content = it.content,
+                title = note.title,
+                content = note.content,
                 isFrameVisible = isFrameVisible,
                 onClick = {
                     if (isFrameVisible) isFrameVisible = false
-                    else onNoteClick(it.id)
+                    else onNoteClick(note.id)
                 },
                 onLongClick = { isFrameVisible = true },
-                onDeleteIconClick = { onDeleteIconClick(it) })
+                onDeleteIconClick = { onDeleteIconClick(note) })
         }
     }
 }
@@ -204,7 +213,8 @@ fun NoteItem(
 
             Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
                 Icon(
-                    imageVector = Icons.Default.Clear, contentDescription = stringResource(R.string.delete),
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = stringResource(R.string.delete),
                     modifier = Modifier
                         .minimumInteractiveComponentSize()
                         .clickable(onClick = onDeleteIconClick)

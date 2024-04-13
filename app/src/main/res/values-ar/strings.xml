@@ -20,11 +20,11 @@
     <string name="logout">تسجيل الخروج</string>
     <string name="task_details">تفاصيل المهمة</string>
     <string name="task_title">عنوان المهمة</string>
-    <string name="ex_travel">السفر..مثلا</string>
+    <string name="task_title_hint">السفر..مثلا</string>
     <string name="describe_your_task">أكتب شيئا عن المهمة</string>
     <string name="save">" حفظ"</string>
     <string name="set_priority">حدد الأولوية</string>
-    <string name="time_date">الوقت والتاريخ</string>
+    <string name="date_time">الوقت والتاريخ</string>
     <string name="confirm">تأكيد</string>
     <string name="search_in_tasks">البحث في المهام</string>
     <string name="no_tasks_yet">لا توجد مهام محفوظة</string>
@@ -42,4 +42,7 @@
     <string name="note_deleted">تم حذف الملاحظة</string>
     <string name="english">الإنجليزية</string>
     <string name="arabic">العربية</string>
+    <string name="new_task">Create New Task</string>
+    <string name="new_note">Create New Note</string>
+    <string name="cancel">Cancel</string>
 </resources>

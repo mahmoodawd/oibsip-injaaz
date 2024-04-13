@@ -12,13 +12,16 @@ android {
     compileSdk = 34
 
     defaultConfig {
+        val defaultTestRunner = "androidx.test.runner.AndroidJUnitRunner"
+        val hiltTestRunner = "dev.awd.injaaz.utils.HiltTestRunner"
+
         applicationId = "dev.awd.injaaz"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = hiltTestRunner
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -54,9 +57,10 @@ android {
 }
 
 dependencies {
-    val room_version = "2.6.1"
-    val hilt_version = "2.48"
-    val appcompat_version = "1.6.1"
+    val roomVersion = "2.6.1"
+    val hiltVersion = "2.48"
+    val appcompatVersion = "1.6.1"
+    val navigationVersion = "2.7.5"
 
 
     implementation("androidx.core:core-ktx:1.12.0")
@@ -72,7 +76,7 @@ dependencies {
     implementation("androidx.compose.material3:material3")
 
     //Navigation Compose
-    implementation("androidx.navigation:navigation-compose:2.7.5")
+    implementation("androidx.navigation:navigation-compose:$navigationVersion")
 
     //Splash Screen API
     implementation("androidx.core:core-splashscreen:1.0.1")
@@ -87,20 +91,20 @@ dependencies {
 
 
     //Room
-    implementation("androidx.room:room-runtime:$room_version")
-    ksp("androidx.room:room-compiler:$room_version")
-    implementation("androidx.room:room-ktx:$room_version")
+    implementation("androidx.room:room-runtime:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
 
     //DataStore
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
-    implementation ("androidx.appcompat:appcompat:$appcompat_version")
+    implementation("androidx.appcompat:appcompat:$appcompatVersion")
     // For loading and tinting drawables on older versions of the platform
 //    implementation "androidx.appcompat:appcompat-resources:$appcompat_version"
 
     //Hilt
-    implementation("com.google.dagger:hilt-android:$hilt_version")
-    ksp("com.google.dagger:hilt-compiler:$hilt_version")
+    implementation("com.google.dagger:hilt-android:$hiltVersion")
+    ksp("com.google.dagger:hilt-compiler:$hiltVersion")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
 
     //ViewModel
@@ -114,12 +118,21 @@ dependencies {
 
     //Test Dependencies
     testImplementation("junit:junit:4.13.2")
+    // Test rules and transitive dependencies:
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.10.01"))
+    androidTestImplementation("androidx.navigation:navigation-testing:$navigationVersion")
+
+
+
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
+    kspAndroidTest("com.google.dagger:hilt-android-compiler:$hiltVersion")
 
     //Debug Dependencies
-    debugImplementation("androidx.compose.ui:ui-tooling")
+// Needed for createAndroidComposeRule, but not createComposeRule:
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+    debugImplementation("androidx.compose.ui:ui-tooling")
 }
