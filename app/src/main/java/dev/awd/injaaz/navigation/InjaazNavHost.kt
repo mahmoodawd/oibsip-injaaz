@@ -1,5 +1,6 @@
 package dev.awd.injaaz.navigation
 
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -23,6 +24,7 @@ private const val NEW_ITEM_ID = -1
 @Composable
 fun InjaazNavHost(
     modifier: Modifier = Modifier,
+    windowSize: WindowWidthSizeClass,
     navController: NavHostController,
     startDestination: String = WelcomeDest.route,
     googleAuthUiClient: AuthUiClient,
@@ -47,6 +49,7 @@ fun InjaazNavHost(
         }
         composable(route = HomeDest.route) {
             HomeScreen(
+                windowSize = windowSize,
                 userName = currentUser?.userName ?: "",
                 userAvatar = currentUser?.profilePhotoUrl ?: "",
                 onAddButtonClick = { screenIndex ->

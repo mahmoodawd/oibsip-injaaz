@@ -15,5 +15,5 @@ data class Task(
 )
 
 enum class Priority(@StringRes val title: Int) {
-    HIGH(R.string.priority_high), MODERATE(R.string.priority_moderate), LOW(R.string.priority_low)
+    LOW(R.string.priority_low), MODERATE(R.string.priority_moderate), HIGH(R.string.priority_high)
 }

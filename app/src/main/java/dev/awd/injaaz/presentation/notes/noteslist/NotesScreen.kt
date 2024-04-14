@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Card
@@ -26,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
@@ -59,6 +62,7 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun NotesScreen(
     modifier: Modifier = Modifier,
+    windowSize: WindowWidthSizeClass,
     onNoteClick: (Int) -> Unit,
     viewModel: NotesViewModel = hiltViewModel(),
 ) {
@@ -77,6 +81,7 @@ fun NotesScreen(
 
 
     NotesScreen(
+        windowSize = windowSize,
         uiState = notesUiState,
         onNoteClick = onNoteClick,
         onDeleteIconClick = viewModel::deleteNote,
@@ -90,6 +95,7 @@ fun NotesScreen(
 @Composable
 fun NotesScreen(
     modifier: Modifier = Modifier,
+    windowSize: WindowWidthSizeClass = WindowWidthSizeClass.Compact,
     uiState: NotesUiState,
     onNoteClick: (Int) -> Unit,
     onDeleteIconClick: (Note) -> Unit,
@@ -102,7 +108,12 @@ fun NotesScreen(
         when (uiState) {
             NotesUiState.Loading -> CircularProgressIndicator(Modifier.align(CenterHorizontally))
 
-            NotesUiState.Empty -> NoNotesView()
+            NotesUiState.Empty -> {
+                if (windowSize == WindowWidthSizeClass.Compact)
+                    NoNotesPortrait(modifier = Modifier.weight(1f))
+                else
+                    NoNotesLandscape(modifier = Modifier.weight(1f))
+            }
 
             is NotesUiState.Notes -> {
 
@@ -127,30 +138,6 @@ fun NotesScreen(
             }
 
         }
-    }
-}
-
-@Composable
-fun NoNotesView(
-    modifier: Modifier = Modifier,
-) {
-    Column(verticalArrangement = Arrangement.Center, modifier = modifier.padding(16.dp)) {
-        Image(
-            painter = painterResource(id = R.drawable.welcome_image),
-            contentDescription = null,
-            contentScale = ContentScale.Fit
-        )
-        Text(
-            text = stringResource(R.string.no_notes_yet).uppercase(),
-            color = Color.White,
-            letterSpacing = 4.sp,
-            fontSize = 32.sp,
-            lineHeight = 48.sp,
-            fontWeight = FontWeight(600),
-            modifier = Modifier
-                .align(Alignment.Start)
-                .padding(vertical = 16.dp)
-        )
     }
 }
 
@@ -181,6 +168,59 @@ fun NotesView(
                 onLongClick = { isFrameVisible = true },
                 onDeleteIconClick = { onDeleteIconClick(note) })
         }
+    }
+}
+
+@Composable
+fun NoNotesPortrait(
+    modifier: Modifier = Modifier,
+) {
+    Column(verticalArrangement = Arrangement.Center, modifier = modifier.padding(16.dp)) {
+        Image(
+            painter = painterResource(id = R.drawable.welcome_image),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.clip(CircleShape)
+        )
+        Text(
+            text = stringResource(R.string.no_notes_yet).uppercase(),
+            color = Color.White,
+            letterSpacing = 4.sp,
+            fontSize = 32.sp,
+            lineHeight = 48.sp,
+            fontWeight = FontWeight(600),
+            modifier = Modifier
+                .align(Alignment.Start)
+                .padding(vertical = 16.dp)
+        )
+    }
+}
+
+@Composable
+fun NoNotesLandscape(
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.padding(16.dp)
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.welcome_image),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.clip(CircleShape)
+        )
+        Text(
+            text = stringResource(R.string.no_notes_yet).uppercase(),
+            color = Color.White,
+            letterSpacing = 4.sp,
+            fontSize = 32.sp,
+            lineHeight = 48.sp,
+            fontWeight = FontWeight(600),
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+        )
     }
 }
 

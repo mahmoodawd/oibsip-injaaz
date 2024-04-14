@@ -61,6 +61,7 @@ dependencies {
     val hiltVersion = "2.48"
     val appcompatVersion = "1.6.1"
     val navigationVersion = "2.7.5"
+    val composeBom = "compose-bom:2023.10.01"
 
 
     implementation("androidx.core:core-ktx:1.12.0")
@@ -68,12 +69,15 @@ dependencies {
     //Compose
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation("androidx.activity:activity-compose:1.8.1")
-    implementation(platform("androidx.compose:compose-bom:2023.10.01"))
+    implementation(platform("androidx.compose:$composeBom"))
     implementation("androidx.lifecycle:lifecycle-runtime-compose")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+
+    //Material Window Size
+    implementation ("androidx.compose.material3:material3-window-size-class:1.2.1")
 
     //Navigation Compose
     implementation("androidx.navigation:navigation-compose:$navigationVersion")

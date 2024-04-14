@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExitToApp
@@ -28,13 +29,14 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DismissDirection
-import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SwipeToDismiss
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDismissState
+import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -44,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -76,6 +79,7 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun TasksScreen(
     modifier: Modifier = Modifier,
+    windowSize: WindowWidthSizeClass,
     viewModel: TasksViewModel = hiltViewModel(),
     onTaskLongClick: (Int) -> Unit,
 ) {
@@ -92,6 +96,7 @@ fun TasksScreen(
         }
     }
     TasksScreen(
+        windowSize = windowSize,
         tasksUiState = tasksUiState,
         onTaskLongClick = onTaskLongClick,
         onTaskDismissed = viewModel::deleteTask,
@@ -106,6 +111,7 @@ fun TasksScreen(
 @Composable
 fun TasksScreen(
     modifier: Modifier = Modifier,
+    windowSize: WindowWidthSizeClass = WindowWidthSizeClass.Compact,
     tasksUiState: TasksUiState,
     onTaskLongClick: (Int) -> Unit,
     onTaskDismissed: (Task) -> Unit,
@@ -118,7 +124,12 @@ fun TasksScreen(
             .padding(16.dp)
     ) {
         when (tasksUiState) {
-            TasksUiState.Empty -> NoTasksView()
+            TasksUiState.Empty -> {
+                if (windowSize == WindowWidthSizeClass.Compact)
+                    NoTasksPortrait(modifier = Modifier.weight(1f))
+                else
+                    NoTasksLandscape(modifier = Modifier.weight(1f))
+            }
 
             TasksUiState.Loading -> CircularProgressIndicator(
                 Modifier
@@ -145,14 +156,17 @@ fun TasksScreen(
 
 
 @Composable
-fun NoTasksView(
+fun NoTasksPortrait(
     modifier: Modifier = Modifier,
 ) {
+
+
     Column(verticalArrangement = Arrangement.Center, modifier = modifier.padding(16.dp)) {
         Image(
             painter = painterResource(id = R.drawable.welcome_image),
             contentDescription = null,
-            contentScale = ContentScale.Fit
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.clip(CircleShape)
         )
         Text(
             text = stringResource(R.string.no_tasks_yet).uppercase(),
@@ -164,6 +178,34 @@ fun NoTasksView(
             modifier = Modifier
                 .align(Alignment.Start)
                 .padding(vertical = 16.dp)
+        )
+    }
+}
+
+@Composable
+private fun NoTasksLandscape(
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.padding(16.dp)
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.welcome_image),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.clip(CircleShape)
+        )
+        Text(
+            text = stringResource(R.string.no_tasks_yet).uppercase(),
+            color = Color.White,
+            letterSpacing = 4.sp,
+            fontSize = 32.sp,
+            lineHeight = 48.sp,
+            fontWeight = FontWeight(600),
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
         )
     }
 }
@@ -217,13 +259,13 @@ fun SwipableTaskItem(
 ) {
     var dismiss by remember { mutableStateOf(false) }
 
-    val dismissState = rememberDismissState(
+    val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = {
-            if (it == DismissValue.DismissedToEnd) {
+            if (it == SwipeToDismissBoxValue.StartToEnd) {
                 dismiss = true
                 true
             } else false
-        }, positionalThreshold = { 150.dp.toPx() }
+        }, positionalThreshold = { 150.0f }
     )
 
     LaunchedEffect(key1 = dismiss) {
@@ -235,11 +277,12 @@ fun SwipableTaskItem(
 
     AnimatedVisibility(visible = !dismiss, exit = fadeOut(spring())) {
 
-        SwipeToDismiss(modifier = modifier,
+        SwipeToDismissBox(modifier = modifier,
             state = dismissState,
-            directions = setOf(DismissDirection.StartToEnd),
-            background = { DismissBackground() },
-            dismissContent = {
+            enableDismissFromStartToEnd = true,
+            enableDismissFromEndToStart = false,
+            backgroundContent = { DismissBackground() },
+            content = {
                 TaskItem(
                     title = title,
                     isCompleted = isCompleted,
@@ -421,6 +464,7 @@ fun OngoingTaskItem(
 private fun TasksPreview() {
     InjaazTheme {
         TasksScreen(
+            windowSize = WindowWidthSizeClass.Compact,
             tasksUiState = TasksUiState.Tasks(
                 tasks = listOf(
                     Task(
@@ -473,6 +517,7 @@ private fun TasksPreview() {
 private fun NoTasksPreview() {
     InjaazTheme {
         TasksScreen(
+            windowSize = WindowWidthSizeClass.Compact,
             tasksUiState = TasksUiState.Empty,
             onTaskLongClick = {},
             onTaskDismissed = {},

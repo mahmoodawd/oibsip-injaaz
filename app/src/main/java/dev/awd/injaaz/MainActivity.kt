@@ -6,6 +6,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -31,42 +34,29 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var googleAuthUiClient: AuthUiClient
 
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         var hideSplashScreen = false
         installSplashScreen()
-        /*.setKeepOnScreenCondition {
-            !hideSplashScreen
-        }*/
-        //Here we used setContentView with ComposeView to be able to use setContent in Android Testing
-//        setContentView(ComposeView(this).apply {
+            .setKeepOnScreenCondition {
+                !hideSplashScreen
+            }
         setContent {
             InjaazTheme {
+                val windowSize = calculateWindowSizeClass(activity = this)
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     InjaazApp(
+                        windowSize = windowSize.widthSizeClass,
                         googleAuthUiClient = googleAuthUiClient,
-                        onSplashTimeOut = { !hideSplashScreen },
+                        onSplashTimeOut = { hideSplashScreen = true },
                         currentUser = googleAuthUiClient.getSignedInUser()
                     )
                 }
             }
-            /* InjaazTheme {
-                 val navController = rememberNavController()
-                 Surface(
-                     modifier = Modifier.fillMaxSize(),
-                     color = MaterialTheme.colorScheme.background
-                 ) {
-                     InjaazNavHost(
-                         navController,
-                         googleAuthUiClient,
-                         onSplashTimeOut = { hideSplashScreen = true })
-                 }
-             }
-         }*/
-//        })
         }
     }
 }
@@ -74,6 +64,7 @@ class MainActivity : AppCompatActivity() {
 @Composable
 fun InjaazApp(
     modifier: Modifier = Modifier,
+    windowSize: WindowWidthSizeClass,
     googleAuthUiClient: AuthUiClient,
     onSplashTimeOut: () -> Unit,
     currentUser: User?,
@@ -93,6 +84,7 @@ fun InjaazApp(
     val navController = rememberNavController()
 
     InjaazNavHost(
+        windowSize = windowSize,
         navController = navController,
         googleAuthUiClient = googleAuthUiClient,
         currentUser = currentUser,

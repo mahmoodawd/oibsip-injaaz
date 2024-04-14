@@ -23,6 +23,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,6 +55,7 @@ import dev.awd.injaaz.ui.theme.pilat_extended
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
+    windowSize: WindowWidthSizeClass,
     userName: String,
     userAvatar: String,
     onAddButtonClick: (currentScreen: BottomBarScreen) -> Unit,
@@ -71,14 +73,16 @@ fun HomeScreen(
         when (currentScreen) {
             BottomBarScreen.Tasks -> { paddingValues ->
                 TasksScreen(
-                    modifier.padding(paddingValues),
+                    windowSize = windowSize,
+                    modifier = modifier.padding(paddingValues),
                     onTaskLongClick = onTaskLongClick,
                 )
             }
 
             BottomBarScreen.Notes -> { paddingValues ->
                 NotesScreen(
-                    modifier.padding(paddingValues),
+                    windowSize = windowSize,
+                    modifier = modifier.padding(paddingValues),
                     onNoteClick = onNoteItemClick,
                 )
             }
@@ -243,6 +247,7 @@ fun AddNewFab(
 private fun HomePreview() {
     InjaazTheme {
         HomeScreen(
+            windowSize = WindowWidthSizeClass.Compact,
             userName = "Mahmoud Awad",
             userAvatar = "",
             onUserAvatarClick = {},
