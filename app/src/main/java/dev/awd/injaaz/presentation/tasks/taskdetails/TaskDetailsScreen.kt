@@ -21,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
@@ -60,6 +61,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -73,6 +75,7 @@ import dev.awd.injaaz.utils.formatDate
 import dev.awd.injaaz.utils.getTimeInMillis
 import timber.log.Timber
 import java.util.Calendar
+import java.util.Locale
 
 /**
  * Stateful screen for adding or editing tasks
@@ -142,7 +145,7 @@ fun TaskDetailsScreen(
         onTimePickerClicked = { showTimePickerDialog = true },
         onDatePickerDismissed = {
             showDatePickerDialog = false
-            datePickerState.setSelection(calendar.timeInMillis)
+            datePickerState.selectedDateMillis = calendar.timeInMillis
         },
         onTimePickerDismissed = { showTimePickerDialog = false },
         datePickerState = datePickerState,
@@ -322,6 +325,7 @@ fun CustomTextField(
         onValueChange = onValueChanged,
         singleLine = singleLine,
         maxLines = maxLines,
+        keyboardOptions = KeyboardOptions(imeAction = if (singleLine) ImeAction.Next else ImeAction.Default ),
         colors = textFieldColors,
         modifier = modifier
             .fillMaxWidth()
@@ -544,7 +548,12 @@ private fun TaskDetailsPreview() {
             onDatePickerClicked = {},
             onDatePickerDismissed = { },
             onTimePickerDismissed = { },
-            datePickerState = DatePickerState(0, 0, 2023..2025, DisplayMode.Picker),
+            datePickerState = DatePickerState(
+                locale = Locale.getDefault(),
+                initialSelectedDateMillis = 0,
+                yearRange = 2023..2025,
+                initialDisplayMode = DisplayMode.Picker
+            ),
             timePickerState = TimePickerState(0, 0, false),
             onCreateTask = {},
             onBackPressed = {})
